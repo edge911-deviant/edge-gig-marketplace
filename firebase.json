@@ -8,6 +8,7 @@
     "runtime": "nodejs22"
   },
   "hosting": {
+    "site": "edge-gig-marketplace",
     "public": "dist",
     "ignore": [
       "firebase.json",
