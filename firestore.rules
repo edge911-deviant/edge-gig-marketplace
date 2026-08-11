@@ -1,0 +1,273 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() { return request.auth != null; }
+    function isOwner(userId) { return isSignedIn() && request.auth.uid == userId; }
+    function incoming() { return request.resource.data; }
+    function existing() { return resource.data; }
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidUser(data) {
+      return data.keys().hasAll([
+               'uid', 'name', 'role', 'bio', 'genres', 'location',
+               'rating', 'completedGigsCount', 'portfolio', 'createdAt'
+             ]) &&
+             data.keys().hasOnly([
+               'uid', 'name', 'role', 'bio', 'genres', 'location',
+               'rating', 'completedGigsCount', 'portfolio', 'createdAt'
+             ]) &&
+             data.uid is string &&
+             data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
+             data.role in ['organiser', 'artist'] &&
+             data.bio is string && data.bio.size() <= 2000 &&
+             data.genres is list && data.genres.size() <= 20 &&
+             data.location is string && data.location.size() <= 200 &&
+             data.rating is number && data.rating >= 0 && data.rating <= 5 &&
+             data.completedGigsCount is int && data.completedGigsCount >= 0 &&
+             data.portfolio is list && data.portfolio.size() <= 20 &&
+             data.createdAt is string;
+    }
+
+    function isValidGig(data) {
+      return data.organiserId is string &&
+             data.title is string && data.title.size() > 0 && data.title.size() <= 200 &&
+             data.description is string && data.description.size() <= 5000 &&
+             data.budget is number && data.budget >= 0 &&
+             data.date is string &&
+             data.location is string && data.location.size() <= 200 &&
+             data.genre is string && data.genre.size() <= 100 &&
+             data.status in ['open', 'filled', 'completed', 'cancelled'] &&
+             data.createdAt is string &&
+             (!('acceptedApplicationId' in data) || data.acceptedApplicationId is string) &&
+             (!('acceptedArtistId' in data) || data.acceptedArtistId is string) &&
+             (!('filledAt' in data) || data.filledAt is timestamp) &&
+             (!('completedAt' in data) || data.completedAt is timestamp) &&
+             (!('cancelledAt' in data) || data.cancelledAt is timestamp) &&
+             (!('cancelledByUid' in data) || data.cancelledByUid is string) &&
+             (!('cancellationReason' in data) || data.cancellationReason in ['cancelled', 'no_show']) &&
+             (!('noShowUid' in data) || data.noShowUid is string);
+    }
+
+    function isValidApplication(data) {
+      return data.keys().hasAll(['gigId', 'artistId', 'organiserId', 'status', 'appliedAt']) &&
+             data.keys().hasOnly([
+               'gigId', 'artistId', 'organiserId', 'status', 'appliedAt',
+               'gigTitle', 'status_updatedAt'
+             ]) &&
+             data.gigId is string &&
+             data.artistId is string &&
+             data.organiserId is string &&
+             data.status in ['pending', 'accepted', 'rejected', 'cancelled'] &&
+             data.appliedAt is string &&
+             (!('gigTitle' in data) || (data.gigTitle is string && data.gigTitle.size() <= 200)) &&
+             (!('status_updatedAt' in data) || data.status_updatedAt is timestamp);
+    }
+
+    function acceptedApplicationWillBeCancelled(gigId, applicationId, artistId, organiserId) {
+      return getAfter(/databases/$(database)/documents/applications/$(applicationId)).data.status == 'cancelled' &&
+             getAfter(/databases/$(database)/documents/applications/$(applicationId)).data.gigId == gigId &&
+             getAfter(/databases/$(database)/documents/applications/$(applicationId)).data.artistId == artistId &&
+             getAfter(/databases/$(database)/documents/applications/$(applicationId)).data.organiserId == organiserId;
+    }
+
+    function isCompletedGigParticipant(gigId, fromUid, toUid) {
+      return exists(/databases/$(database)/documents/gigs/$(gigId)) &&
+             get(/databases/$(database)/documents/gigs/$(gigId)).data.status == 'completed' &&
+             (
+               (get(/databases/$(database)/documents/gigs/$(gigId)).data.organiserId == fromUid &&
+                get(/databases/$(database)/documents/gigs/$(gigId)).data.acceptedArtistId == toUid) ||
+               (get(/databases/$(database)/documents/gigs/$(gigId)).data.acceptedArtistId == fromUid &&
+                get(/databases/$(database)/documents/gigs/$(gigId)).data.organiserId == toUid)
+             );
+    }
+
+    match /system/connection {
+      allow read: if true;
+    }
+
+    match /users/{userId} {
+      allow read: if isSignedIn();
+      allow create: if isOwner(userId) &&
+                    isValidUser(incoming()) &&
+                    incoming().uid == userId &&
+                    incoming().rating == 5 &&
+                    incoming().completedGigsCount == 0;
+      allow update: if isOwner(userId) &&
+                    isValidUser(incoming()) &&
+                    incoming().uid == existing().uid &&
+                    incoming().role == existing().role &&
+                    incoming().rating == existing().rating &&
+                    incoming().completedGigsCount == existing().completedGigsCount &&
+                    incoming().createdAt == existing().createdAt &&
+                    incoming().diff(existing()).affectedKeys().hasOnly([
+                      'name', 'bio', 'genres', 'location', 'portfolio'
+                    ]);
+    }
+
+    match /gigs/{gigId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() &&
+                    isValidGig(incoming()) &&
+                    incoming().keys().hasOnly([
+                      'organiserId', 'title', 'description', 'budget', 'date',
+                      'location', 'genre', 'status', 'createdAt'
+                    ]) &&
+                    incoming().organiserId == request.auth.uid &&
+                    incoming().status == 'open' &&
+                    isValidId(gigId);
+
+      allow update: if isSignedIn() &&
+                    isValidGig(incoming()) &&
+                    incoming().organiserId == existing().organiserId &&
+                    incoming().createdAt == existing().createdAt &&
+                    (
+        // Organiser-owned changes.
+        (existing().organiserId == request.auth.uid && (
+          (existing().status == 'open' && incoming().status == 'open' &&
+           incoming().diff(existing()).affectedKeys().hasOnly([
+             'title', 'description', 'budget', 'date', 'location', 'genre'
+           ])) ||
+
+          (existing().status == 'open' && incoming().status == 'filled' &&
+           incoming().acceptedApplicationId is string &&
+           incoming().acceptedArtistId is string &&
+           incoming().filledAt is timestamp &&
+           getAfter(/databases/$(database)/documents/applications/$(incoming().acceptedApplicationId)).data.status == 'accepted' &&
+           getAfter(/databases/$(database)/documents/applications/$(incoming().acceptedApplicationId)).data.gigId == gigId &&
+           getAfter(/databases/$(database)/documents/applications/$(incoming().acceptedApplicationId)).data.artistId == incoming().acceptedArtistId &&
+           getAfter(/databases/$(database)/documents/applications/$(incoming().acceptedApplicationId)).data.organiserId == request.auth.uid &&
+           incoming().diff(existing()).affectedKeys().hasOnly([
+             'status', 'acceptedApplicationId', 'acceptedArtistId', 'filledAt'
+           ])) ||
+
+          (existing().status == 'filled' && incoming().status == 'completed' &&
+           incoming().completedAt is timestamp &&
+           incoming().diff(existing()).affectedKeys().hasOnly(['status', 'completedAt'])) ||
+
+          (existing().status == 'open' && incoming().status == 'cancelled' &&
+           incoming().cancelledAt is timestamp &&
+           incoming().cancelledByUid == request.auth.uid &&
+           incoming().cancellationReason == 'cancelled' &&
+           incoming().diff(existing()).affectedKeys().hasOnly([
+             'status', 'cancelledAt', 'cancelledByUid', 'cancellationReason'
+           ])) ||
+
+          (existing().status == 'filled' && incoming().status == 'cancelled' &&
+           incoming().cancelledAt is timestamp &&
+           incoming().cancelledByUid == request.auth.uid &&
+           incoming().cancellationReason == 'cancelled' &&
+           acceptedApplicationWillBeCancelled(
+             gigId, existing().acceptedApplicationId,
+             existing().acceptedArtistId, existing().organiserId
+           ) &&
+           incoming().diff(existing()).affectedKeys().hasOnly([
+             'status', 'cancelledAt', 'cancelledByUid', 'cancellationReason'
+           ])) ||
+
+          (existing().status == 'filled' && incoming().status == 'cancelled' &&
+           incoming().cancelledAt is timestamp &&
+           incoming().cancelledByUid == existing().acceptedArtistId &&
+           incoming().cancellationReason == 'no_show' &&
+           incoming().noShowUid == existing().acceptedArtistId &&
+           acceptedApplicationWillBeCancelled(
+             gigId, existing().acceptedApplicationId,
+             existing().acceptedArtistId, existing().organiserId
+           ) &&
+           incoming().diff(existing()).affectedKeys().hasOnly([
+             'status', 'cancelledAt', 'cancelledByUid', 'cancellationReason', 'noShowUid'
+           ]))
+        )) ||
+
+        // The accepted artist may cancel only their filled booking, atomically
+        // closing the reciprocal application.
+        (existing().status == 'filled' &&
+         existing().acceptedArtistId == request.auth.uid &&
+         incoming().status == 'cancelled' &&
+         incoming().cancelledAt is timestamp &&
+         incoming().cancelledByUid == request.auth.uid &&
+         incoming().cancellationReason == 'cancelled' &&
+         acceptedApplicationWillBeCancelled(
+           gigId, existing().acceptedApplicationId,
+           existing().acceptedArtistId, existing().organiserId
+         ) &&
+         incoming().diff(existing()).affectedKeys().hasOnly([
+           'status', 'cancelledAt', 'cancelledByUid', 'cancellationReason'
+         ]))
+      );
+    }
+
+    match /applications/{applicationId} {
+      allow read: if isSignedIn() && (
+        resource.data.artistId == request.auth.uid ||
+        resource.data.organiserId == request.auth.uid
+      );
+
+      allow create: if isSignedIn() &&
+                    isValidApplication(incoming()) &&
+                    incoming().artistId == request.auth.uid &&
+                    incoming().status == 'pending' &&
+                    applicationId == incoming().gigId + '_' + incoming().artistId &&
+                    exists(/databases/$(database)/documents/gigs/$(incoming().gigId)) &&
+                    get(/databases/$(database)/documents/gigs/$(incoming().gigId)).data.organiserId == incoming().organiserId &&
+                    get(/databases/$(database)/documents/gigs/$(incoming().gigId)).data.status == 'open';
+
+      allow update: if isSignedIn() &&
+                    isValidApplication(incoming()) &&
+                    incoming().gigId == existing().gigId &&
+                    incoming().artistId == existing().artistId &&
+                    incoming().organiserId == existing().organiserId &&
+                    incoming().appliedAt == existing().appliedAt &&
+                    incoming().diff(existing()).affectedKeys().hasOnly(['status', 'status_updatedAt']) &&
+                    (
+        (existing().organiserId == request.auth.uid &&
+         existing().status == 'pending' &&
+         (
+           incoming().status == 'rejected' ||
+           (incoming().status == 'accepted' &&
+            get(/databases/$(database)/documents/gigs/$(existing().gigId)).data.status == 'open' &&
+            getAfter(/databases/$(database)/documents/gigs/$(existing().gigId)).data.status == 'filled' &&
+            getAfter(/databases/$(database)/documents/gigs/$(existing().gigId)).data.acceptedApplicationId == applicationId &&
+            getAfter(/databases/$(database)/documents/gigs/$(existing().gigId)).data.acceptedArtistId == existing().artistId)
+         )) ||
+
+        (existing().artistId == request.auth.uid &&
+         existing().status == 'pending' &&
+         incoming().status == 'cancelled') ||
+
+        (existing().status == 'accepted' &&
+         incoming().status == 'cancelled' &&
+         (existing().artistId == request.auth.uid || existing().organiserId == request.auth.uid) &&
+         getAfter(/databases/$(database)/documents/gigs/$(existing().gigId)).data.status == 'cancelled' &&
+         getAfter(/databases/$(database)/documents/gigs/$(existing().gigId)).data.acceptedApplicationId == applicationId &&
+         getAfter(/databases/$(database)/documents/gigs/$(existing().gigId)).data.acceptedArtistId == existing().artistId)
+      );
+    }
+
+    match /reviews/{reviewId} {
+      allow read: if isSignedIn();
+      allow create: if isSignedIn() &&
+                    incoming().keys().hasAll([
+                      'gigId', 'fromUid', 'toUid', 'score', 'comment', 'createdAt'
+                    ]) &&
+                    incoming().keys().hasOnly([
+                      'gigId', 'fromUid', 'toUid', 'score', 'comment', 'createdAt'
+                    ]) &&
+                    incoming().gigId is string &&
+                    incoming().fromUid == request.auth.uid &&
+                    incoming().toUid is string &&
+                    incoming().score is int && incoming().score >= 1 && incoming().score <= 5 &&
+                    incoming().comment is string && incoming().comment.size() <= 1000 &&
+                    incoming().createdAt is string &&
+                    reviewId == incoming().gigId + '_' + incoming().fromUid &&
+                    isCompletedGigParticipant(
+                      incoming().gigId, incoming().fromUid, incoming().toUid
+                    );
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}

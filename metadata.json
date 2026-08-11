@@ -1,0 +1,8 @@
+{
+  "name": "EDGE - Gig Marketplace",
+  "description": "A mobile-first platform connecting event organisers and artists for structured bookings and transparent gig management.",
+  "requestFramePermissions": [
+    "geolocation"
+  ],
+  "majorCapabilities": []
+}
