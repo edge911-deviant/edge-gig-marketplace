@@ -28,6 +28,9 @@ jobs:
         with:
           enablement: true
       - run: npm ci
+      # The root TypeScript project also checks functions/src, so install its
+      # declared types before running the shared lint gate.
+      - run: npm ci --prefix functions
       - name: Verify web release
         run: |
           npm run lint
