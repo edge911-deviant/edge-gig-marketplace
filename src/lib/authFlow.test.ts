@@ -88,8 +88,9 @@ test('tracks and clears the redirect handoff marker', () => {
 
 test('the GitHub Pages shell immediately forwards to the canonical app', async () => {
   const redirectPage = await readFile(new URL('../../.github/pages-redirect.html', import.meta.url), 'utf8');
-  assert.match(redirectPage, /http-equiv="refresh" content="0; url=https:\/\/edge-gig-marketplace\.web\.app\/"/);
-  assert.match(redirectPage, /window\.location\.replace\('https:\/\/edge-gig-marketplace\.web\.app\/'\)/);
+  assert.match(redirectPage, /http-equiv="refresh" content="0; url=https:\/\/edge-gig-marketplace\.web\.app\/\?from=github-pages"/);
+  assert.match(redirectPage, /target\.searchParams\.set\('fresh', Date\.now\(\)\.toString\(36\)\)/);
+  assert.match(redirectPage, /window\.location\.replace\(target\.toString\(\)\)/);
   assert.match(redirectPage, /href="https:\/\/edge-gig-marketplace\.web\.app\/">Continue to EDGE<\/a>/);
 });
 
@@ -102,4 +103,18 @@ test('Firebase Hosting always rebuilds and verifies the full app before deployme
     'npm run build:firebase',
     'npm run verify:hosting-artifact',
   ]);
+});
+
+test('Firebase HTML is never allowed to reuse a stale authentication shell', async () => {
+  const firebaseConfig = JSON.parse(
+    await readFile(new URL('../../firebase.json', import.meta.url), 'utf8'),
+  ) as { hosting: { headers?: Array<{ source: string; headers: Array<{ key: string; value: string }> }> } };
+  const cacheValueFor = (source: string) => firebaseConfig.hosting.headers
+    ?.find((entry) => entry.source === source)
+    ?.headers.find((header) => header.key === 'Cache-Control')
+    ?.value;
+
+  assert.equal(cacheValueFor('/'), 'no-cache, no-store, must-revalidate');
+  assert.equal(cacheValueFor('**/*.html'), 'no-cache, no-store, must-revalidate');
+  assert.equal(cacheValueFor('/assets/**'), 'public, max-age=31536000, immutable');
 });

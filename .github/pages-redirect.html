@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta http-equiv="refresh" content="0; url=https://edge-gig-marketplace.web.app/" />
+    <meta http-equiv="refresh" content="0; url=https://edge-gig-marketplace.web.app/?from=github-pages" />
     <link rel="canonical" href="https://edge-gig-marketplace.web.app/" />
     <title>Opening EDGE — Gig Marketplace</title>
     <style>
@@ -16,7 +16,10 @@
       a { display: inline-block; padding: 0.9rem 1.25rem; border-radius: 999px; background: #020617; color: white; font-weight: 800; text-decoration: none; }
     </style>
     <script>
-      window.location.replace('https://edge-gig-marketplace.web.app/');
+      const target = new URL('https://edge-gig-marketplace.web.app/');
+      target.searchParams.set('from', 'github-pages');
+      target.searchParams.set('fresh', Date.now().toString(36));
+      window.location.replace(target.toString());
     </script>
   </head>
   <body>
