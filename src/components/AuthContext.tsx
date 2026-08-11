@@ -1,8 +1,37 @@
-import React, { createContext, useContext, useEffect, useState } from 'react';
-import { onAuthStateChanged, User, GoogleAuthProvider, signInWithPopup, signOut } from 'firebase/auth';
+import React, { createContext, useContext, useEffect, useRef, useState } from 'react';
+import {
+  getRedirectResult,
+  GoogleAuthProvider,
+  onAuthStateChanged,
+  signInWithPopup,
+  signInWithRedirect,
+  signOut,
+  User,
+} from 'firebase/auth';
 import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
 import { auth, authPersistenceReady, db } from '../lib/firebase';
+import {
+  AUTH_REDIRECT_TIMEOUT_MS,
+  CANONICAL_APP_URL,
+  canonicalForwardTarget,
+  chooseAuthTransport,
+  clearPendingAuthRedirect,
+  describeAuthError,
+  hasPendingAuthRedirect,
+  markAuthRedirectPending,
+  runAfterAuthPrerequisite,
+  withAuthTimeout,
+} from '../lib/authFlow';
 import { UserProfile, UserRole } from '../types';
+
+export type AuthPhase =
+  | 'initializing'
+  | 'redirecting'
+  | 'resolvingRedirect'
+  | 'poweringUp'
+  | 'signedOut'
+  | 'ready'
+  | 'recoverableError';
 
 // AuthContext makes the signed-in Firebase user and their marketplace profile
 // available to every screen without passing them through props manually.
@@ -10,6 +39,7 @@ interface AuthContextType {
   user: User | null;
   profile: UserProfile | null;
   loading: boolean;
+  phase: AuthPhase;
   authError: string;
   signIn: () => Promise<void>;
   logout: () => Promise<void>;
@@ -20,117 +50,220 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | null>(null);
 
-function describeAuthError(error: any) {
-  switch (error?.code) {
-    case 'auth/unauthorized-domain':
-      return 'Firebase does not authorize this address. Add the current hostname under Authentication > Settings > Authorized domains.';
-    case 'auth/operation-not-allowed':
-      return 'Google sign-in is not enabled for this Firebase project. Enable the Google provider under Authentication > Sign-in providers.';
-    case 'auth/popup-blocked':
-      return 'The browser blocked the Google sign-in window. Allow pop-ups for EDGE and try again.';
-    case 'auth/popup-closed-by-user':
-    case 'auth/cancelled-popup-request':
-      return 'The Google sign-in window closed before authentication finished.';
-    case 'auth/network-request-failed':
-      return 'Firebase could not reach Google sign-in. Check the network connection and try again.';
-    case 'auth/storage-unavailable':
-    case 'auth/web-storage-unsupported':
-      return 'This browser blocks the local storage required for sign-in. Enable site storage or use a normal browser window.';
-    case 'auth/operation-not-supported-in-this-environment':
-      return 'Google sign-in is not supported inside this browser. Open EDGE in Chrome, Edge, Firefox, or Safari.';
-    case 'auth/invalid-credential':
-      return 'Google returned an invalid sign-in response. Try Initialize Protocol again.';
-    default:
-      return 'Sign-in failed. Check the Firebase Authentication settings and try again.';
+let canonicalRedirectResultPromise: ReturnType<typeof getRedirectResult> | null = null;
+
+function getCanonicalRedirectResultOnce() {
+  if (!canonicalRedirectResultPromise) {
+    canonicalRedirectResultPromise = authPersistenceReady.then(() => getRedirectResult(auth));
   }
+  return canonicalRedirectResultPromise;
 }
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [loading, setLoading] = useState(true);
   const [authError, setAuthError] = useState('');
+  const transport = chooseAuthTransport(window.location);
+  const forwardTarget = canonicalForwardTarget(window.location);
+  const [phase, setPhase] = useState<AuthPhase>(() => (
+    forwardTarget
+      ? 'redirecting'
+      : transport === 'same-origin-redirect' && hasPendingAuthRedirect()
+      ? 'resolvingRedirect'
+      : 'initializing'
+  ));
+  const signInAttemptPending = useRef(false);
 
   useEffect(() => {
     let active = true;
+    let timedOut = false;
     let unsubscribe: (() => void) | null = null;
+    let redirectSettled = transport !== 'same-origin-redirect';
+    let redirectReturnedEmpty = false;
+    let observedUser: User | null | undefined;
+    let committedIdentity: string | null | undefined;
+    let hydrationGeneration = 0;
+    const redirectWasPending = transport === 'same-origin-redirect' && hasPendingAuthRedirect();
+
+    const clearWatchdog = () => window.clearTimeout(watchdogId);
+
+    const showRecoverableError = (error: unknown) => {
+      if (!active) return;
+      clearWatchdog();
+      setAuthError(describeAuthError(error));
+      setPhase('recoverableError');
+    };
 
     const hydrateUser = async (nextUser: User | null) => {
-      if (!active) return;
+      if (!active || timedOut) return;
+      const generation = ++hydrationGeneration;
       console.log('[Auth] Auth state:', nextUser ? `signed_in:${nextUser.uid}` : 'signed_out');
       setUser(nextUser);
+      if (!nextUser) {
+        setProfile(null);
+        setPhase('signedOut');
+        clearWatchdog();
+        return;
+      }
+
+      setPhase('poweringUp');
       try {
-        if (nextUser) {
-          setAuthError('');
-          const docRef = doc(db, 'users', nextUser.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            setProfile(docSnap.data() as UserProfile);
-          } else {
-            setProfile(null);
-          }
+        const docRef = doc(db, 'users', nextUser.uid);
+        const docSnap = await getDoc(docRef);
+        if (!active || timedOut || generation !== hydrationGeneration) return;
+        setAuthError('');
+        if (docSnap.exists()) {
+          setProfile(docSnap.data() as UserProfile);
         } else {
           setProfile(null);
         }
+        setPhase('ready');
+        clearWatchdog();
       } catch (error) {
         console.error('[Auth] Profile load failed:', error);
-        if (active) {
-          setProfile(null);
-          setAuthError('Your account signed in, but the EDGE profile could not be loaded from Firestore. Check Firestore rules.');
-        }
+        if (!active || timedOut || generation !== hydrationGeneration) return;
+        setProfile(null);
+        showRecoverableError(Object.assign(new Error('The signed-in EDGE profile could not be loaded.'), {
+          code: 'auth/profile-load-failed',
+        }));
       }
     };
 
-    const bootstrapAuth = async () => {
-      // Wait for persistence before subscribing. This prevents Firebase's
-      // initial transient signed-out event from winning over a stored session.
-      await authPersistenceReady;
-      if (!active) return;
+    const commitObservedUser = () => {
+      if (!active || timedOut || observedUser === undefined) return;
+      if (observedUser === null && !redirectSettled) return;
+      if (observedUser === null && redirectReturnedEmpty) {
+        showRecoverableError(Object.assign(new Error('The redirect handoff returned empty.'), {
+          code: 'auth/interrupted-redirect',
+        }));
+        return;
+      }
 
-      // Firebase calls this whenever the login session changes. On login we
-      // also load the user's marketplace profile from /users/{uid}.
-      unsubscribe = onAuthStateChanged(
-        auth,
-        (nextUser) => {
-          void hydrateUser(nextUser).finally(() => {
-            if (active) {
-              console.log('[Auth] Auth bootstrap ready');
-              setLoading(false);
-            }
-          });
-        },
-        (error) => {
-          console.error('[Auth] Auth state listener failed:', error);
-          if (active) {
-            setAuthError(describeAuthError(error));
-            setLoading(false);
-          }
-        },
-      );
+      const identity = observedUser?.uid ?? null;
+      if (committedIdentity === identity) return;
+      committedIdentity = identity;
+      void hydrateUser(observedUser);
     };
 
-    void bootstrapAuth();
+    const watchdogId = window.setTimeout(() => {
+      if (!active) return;
+      timedOut = true;
+      clearPendingAuthRedirect();
+      setAuthError(describeAuthError(Object.assign(new Error('Auth bootstrap timed out.'), {
+        code: 'auth/bootstrap-timeout',
+      })));
+      setPhase('recoverableError');
+    }, AUTH_REDIRECT_TIMEOUT_MS);
+
+    // A stale cached GitHub Pages bundle must never restore a second public
+    // Firebase session. Forward before subscribing to auth or loading data.
+    if (forwardTarget) {
+      setPhase('redirecting');
+      try {
+        window.location.replace(forwardTarget);
+      } catch (error) {
+        showRecoverableError(error);
+      }
+      return () => {
+        active = false;
+        clearWatchdog();
+      };
+    }
+
+    // Subscribe immediately. Firebase queues this observer behind its own
+    // redirect initialization; a signed-out event cannot win until the
+    // redirect result below has settled.
+    unsubscribe = onAuthStateChanged(
+      auth,
+      (nextUser) => {
+        observedUser = nextUser;
+        commitObservedUser();
+      },
+      (error) => {
+        console.error('[Auth] Auth state listener failed:', error);
+        showRecoverableError(error);
+      },
+    );
+
+    if (transport === 'same-origin-redirect') {
+      setPhase(redirectWasPending ? 'resolvingRedirect' : 'initializing');
+      void getCanonicalRedirectResultOnce()
+        .then((result) => {
+          if (!active || timedOut) return;
+          clearPendingAuthRedirect();
+          redirectSettled = true;
+          redirectReturnedEmpty = redirectWasPending && !result;
+          if (result?.user) observedUser = result.user;
+          commitObservedUser();
+        })
+        .catch((error) => {
+          if (!active || timedOut) return;
+          clearPendingAuthRedirect();
+          redirectSettled = true;
+          console.error('[Auth] Redirect sign-in failed:', error);
+          if (observedUser) {
+            commitObservedUser();
+          } else {
+            showRecoverableError(error);
+          }
+        });
+    } else {
+      redirectSettled = true;
+      commitObservedUser();
+    }
+
     return () => {
       active = false;
+      ++hydrationGeneration;
+      clearWatchdog();
       unsubscribe?.();
     };
-  }, []);
+  }, [forwardTarget, transport]);
 
   const signIn = async () => {
+    if (signInAttemptPending.current) return;
+    signInAttemptPending.current = true;
     setAuthError('');
-    await authPersistenceReady;
+    setPhase('redirecting');
     const provider = new GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
 
-    // GitHub Pages is hosted outside Firebase. The supported popup flow uses
-    // Firebase's registered OAuth handler and avoids a custom redirect URI.
     try {
-      console.log('[Auth] Opening Google sign-in');
-      const result = await signInWithPopup(auth, provider);
-      console.log('[Auth] Google popup: signed_in', result.user.uid);
+      if (transport === 'canonical-forward') {
+        console.log('[Auth] Forwarding to canonical Firebase app');
+        await withAuthTimeout(new Promise<never>(() => window.location.replace(CANONICAL_APP_URL)));
+        return;
+      }
+
+      if (transport === 'local-popup') {
+        await authPersistenceReady;
+        console.log('[Auth] Opening local developer sign-in popup');
+        const result = await signInWithPopup(auth, provider);
+        console.log('[Auth] Local Google popup: signed_in', result.user.uid);
+        signInAttemptPending.current = false;
+        return;
+      }
+
+      console.log('[Auth] Starting same-origin Google redirect');
+      await runAfterAuthPrerequisite(authPersistenceReady, async () => {
+        markAuthRedirectPending();
+        const redirectDeadline = window.setTimeout(() => {
+          // Reloading cancels this Firebase instance before a stalled redirect
+          // can navigate unexpectedly after the recovery deadline.
+          window.location.replace(CANONICAL_APP_URL);
+        }, AUTH_REDIRECT_TIMEOUT_MS);
+        try {
+          await signInWithRedirect(auth, provider);
+        } finally {
+          window.clearTimeout(redirectDeadline);
+        }
+      });
     } catch (error) {
-      console.error('[Auth] Google popup failed:', error);
+      clearPendingAuthRedirect();
+      signInAttemptPending.current = false;
+      console.error('[Auth] Google sign-in failed:', error);
       setAuthError(describeAuthError(error));
+      setPhase('recoverableError');
       throw error;
     }
   };
@@ -176,7 +309,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   return (
-    <AuthContext.Provider value={{ user, profile, loading, authError, signIn, logout, createProfile, updateProfile, clearAuthError: () => setAuthError('') }}>
+    <AuthContext.Provider value={{
+      user,
+      profile,
+      loading: ['initializing', 'redirecting', 'resolvingRedirect', 'poweringUp'].includes(phase),
+      phase,
+      authError,
+      signIn,
+      logout,
+      createProfile,
+      updateProfile,
+      clearAuthError: () => setAuthError(''),
+    }}>
       {children}
     </AuthContext.Provider>
   );

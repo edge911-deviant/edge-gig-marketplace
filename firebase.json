@@ -10,6 +10,10 @@
   "hosting": {
     "site": "edge-gig-marketplace",
     "public": "dist",
+    "predeploy": [
+      "npm run build:firebase",
+      "npm run verify:hosting-artifact"
+    ],
     "ignore": [
       "firebase.json",
       "**/.*",

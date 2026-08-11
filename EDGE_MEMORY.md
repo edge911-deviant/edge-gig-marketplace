@@ -71,17 +71,24 @@ The user identity comes from Firebase Auth. Firestore ownership comes from authe
 
 When changing data behavior, read [security_spec.md](security_spec.md) and [firestore.rules](firestore.rules) together with the component. Any new field, collection, role, transition, or query needs a matching security decision. Preserve the global deny fallback.
 
-### Law 6: OAuth must remain stateful and recoverable
+### Law 6: OAuth must remain same-origin and recoverable
 
-The current sign-in flow uses a direct Identity Toolkit Google authorization URI because the embedded browser and Firebase helper/popup behavior were unreliable. The flow stores and validates an OAuth `state`, handles the redirect hash, exchanges the returned credential, clears the URL, and explains failures.
+The production app has one canonical address: `https://edge-gig-marketplace.web.app/`. Google sign-in starts there with Firebase's full-page `signInWithRedirect` flow. Because the app and Firebase's authentication handler share the Firebase Hosting origin, the flow does not depend on a popup window or a cross-site opener bridge.
 
-Do not casually replace it with `signInWithPopup`, a helper iframe, or a different redirect flow. Reproduce the embedded-browser failure first, then preserve:
+The GitHub Pages address is an app-shell forwarder, not a second authenticated copy of EDGE. It must send visitors to the canonical Firebase Hosting address before authentication starts. Do not add sign-in, Firestore session handling, or a separate application state to the GitHub Pages shell.
 
-- the current origin and callback behavior;
-- `state` generation, storage, and validation;
-- explicit authorized-domain and provider errors;
-- browser-local session persistence;
-- a visible retry path that does not silently return to page one.
+Some embedded browsers do not support Google OAuth reliably. The signed-out screen must expose the canonical address and explain that the user should open it in Chrome, Edge, Firefox, or Safari before sign-in. While EDGE is loaded, its authentication watchdog must replace a stalled local handoff with recovery guidance instead of an endless `Authenticating_EDGE` screen. Once Google owns the tab, EDGE cannot intercept an off-site embedded-browser rejection; external-browser recovery is necessarily manual.
+
+When changing authentication, preserve:
+
+- Firebase Hosting as the only production origin that starts sign-in;
+- `signInWithRedirect`, redirect-result recovery, and browser-local session persistence;
+- explicit authorized-domain, provider, storage, and network errors;
+- the branded waiting sequence with a bounded, visible recovery path;
+- a clear standard-browser fallback for unsupported embedded browsers;
+- logout behavior that returns to a clean signed-out state.
+
+Do not replace the redirect flow with `signInWithPopup` without reproducing and solving the popup/opener delay that led to this architecture.
 
 ### Law 7: Existing features have a reason
 
@@ -187,7 +194,7 @@ The black dock keeps the primary mode switch available without looking like a st
 
 ### Error boundary and empty states
 
-Network and auth failures are expected in a Firebase app, especially in embedded browsers. The error boundary, retry copy, scanning empty state, waiting-for-signals state, and progress overlays prevent the user from interpreting a transient delay as data loss. Preserve them when refactoring queries or loading states.
+Network and auth failures are expected in a Firebase app. Embedded browsers may not support Google sign-in at all, so they need a clear standard-browser fallback rather than repeated automatic retries. The error boundary, retry copy, scanning empty state, waiting-for-signals state, and progress overlays prevent the user from interpreting a transient delay as data loss. Preserve them when refactoring queries or loading states.
 
 ## 5. Before editing or deleting anything
 
@@ -224,9 +231,10 @@ Known current limitations to keep visible during future work:
 - The radar scan remains a visual motif and is not a map or proximity service; only its open-gig count is live.
 - Gemini is served by an App Check-protected callable function, but the secret, App Check provider, and function must be configured/deployed in the target Firebase project before production use.
 - The Firestore emulator suite requires Java 21+. CI installs it; older local Java installations cannot execute the rules suite.
-- Firebase Authentication provider settings and production authorized domains are console-managed and must be verified for every deployed hostname.
+- Firebase Authentication provider settings and authorized domains are console-managed. Verify the canonical Firebase Hosting hostname and both local development hostnames before release.
 - Firebase web configuration values are client configuration, but access is still constrained by auth and Firestore rules; do not treat a public API key as a secret or as authorization.
-- Direct OAuth redirect behavior is sensitive to hostname, authorized domains, browser context, and stored state. Test it in the browser that users actually use.
+- Production Google sign-in is supported from `https://edge-gig-marketplace.web.app/`. GitHub Pages only forwards there and must not become a second authentication origin.
+- OAuth redirect behavior is sensitive to hostname, authorized domains, browser context, and stored state. Test the canonical address in a standard browser. Treat an embedded-browser message to open that address externally as a supported recovery path.
 
 Current workflow guarantees:
 
@@ -252,19 +260,26 @@ Before calling a change complete:
 
 - Open the fresh local build in the intended browser context.
 - Start signed out and verify the tilted-glyph auth screen.
-- Click `Initialize Protocol` and observe both auth loading states.
+- Click `Initialize Protocol` and verify that the developer-only localhost popup completes in a standard browser.
+- Verify that the local app receives the authenticated session and both auth loading states complete.
 - Verify success does not return to the landing screen.
 - Verify auth failure gives a useful retry message.
+- Repeat the signed-out redirect test on `https://edge-gig-marketplace.web.app/` and verify that Google returns to that canonical origin.
+- On the canonical production app, verify that Google opens as a full-page redirect, not a popup.
+- Open the GitHub Pages address and verify that its app shell forwards to `https://edge-gig-marketplace.web.app/` before sign-in starts.
+- In an unsupported embedded browser, verify the user gets a clear instruction to open the canonical address in Chrome, Edge, Firefox, or Safari instead of an endless loading state.
 - Verify a new user can choose a role and reach the correct home.
 - Verify the artist feed, gig form, organiser dashboard, and applicant decision states that the change touches.
 - Open the profile and check the top logout icon, `NODE_ACTIVE`, telemetry cards, `AES-256` panel, `DISCONNECT_SESSION`, and floating dock.
 - Use logout, then verify the auth entry returns cleanly without stale authenticated content.
 - Resize or inspect the phone frame so no critical content is behind a sticky overlay or clipped by overflow.
 
-### GitHub readiness
+### Release readiness
 
 - Do not publish until the docs and code comments explain intentional props and known limitations.
-- Confirm local OAuth domains and production redirect configuration are documented separately; localhost success does not prove production success.
+- Confirm local OAuth domains and the canonical production redirect configuration are documented separately; localhost success does not prove production success.
+- Deploy the complete app to Firebase Hosting. Publish only the forwarding app shell to GitHub Pages.
+- Smoke-test authentication on `https://edge-gig-marketplace.web.app/`; do not use the GitHub Pages forwarder as proof that sign-in works.
 - Keep the existing feature intent visible in the commit or pull request description.
 - Mention any intentional visual change with a before/after screenshot or concise rationale.
 - Publish only after lint, build, browser smoke checks, and security review are green.

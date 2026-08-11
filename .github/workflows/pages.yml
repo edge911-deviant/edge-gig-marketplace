@@ -16,6 +16,7 @@ concurrency:
 
 jobs:
   build:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -27,8 +28,12 @@ jobs:
         with:
           enablement: true
       - run: npm ci
-      - name: Build project site
-        run: npm run build
+      - name: Verify web release
+        run: |
+          npm run lint
+          npm test
+      - name: Build canonical forwarder and public information pages
+        run: npm run build:pages
         env:
           VITE_BASE_PATH: /edge-gig-marketplace/
       - uses: actions/upload-pages-artifact@v5

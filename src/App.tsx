@@ -18,6 +18,7 @@ import { db } from './lib/firebase';
 import { AuthProvider, useAuth } from './components/AuthContext';
 import { Gig, Application, UserRole, UserProfile } from './types';
 import { Haptics } from './lib/haptics';
+import { CANONICAL_APP_URL } from './lib/authFlow';
 import { GIG_GENRES, filterGigs } from './lib/gigFilters';
 import {
   ApplicationDecision,
@@ -979,67 +980,69 @@ const MainApp = () => {
 };
 
 const AuthWrapper = () => {
-  // AuthWrapper chooses between loading, sign-in, and the signed-in app.
-  // If Google rejects the current hostname, authError explains the fix in the UI.
-  // This is an OAuth configuration issue, not a Firestore or React rendering issue.
-  const { user, profile, loading, signIn, authError: firebaseAuthError, clearAuthError } = useAuth();
-  const [authError, setAuthError] = useState('');
-  const [isAuthenticating, setIsAuthenticating] = useState(false);
-  const [isPoweringUp, setIsPoweringUp] = useState(false);
+  // AuthContext owns the complete redirect lifecycle so a delayed Firebase
+  // callback cannot be mistaken for an ordinary signed-out page.
+  const { user, phase, signIn, authError, clearAuthError } = useAuth();
 
-  const handleSignIn = async () => {
-    setAuthError('');
+  const handleSignIn = () => {
     clearAuthError();
-    setIsAuthenticating(true);
-    try {
-      await signIn();
-      // Keep the branded transition as part of the successful auth journey.
-      // It gives Firebase time to hydrate the user/profile before the shell appears.
-      setIsAuthenticating(false);
-      setIsPoweringUp(true);
-      await new Promise((resolve) => window.setTimeout(resolve, 900));
-    } catch (error: any) {
-      if (error?.code === 'auth/unauthorized-domain') {
-        setAuthError('Firebase does not authorize this address yet. Add the current hostname under Firebase Authentication > Settings > Authorized domains, then try Initialize Protocol again.');
-      } else if (error?.code === 'auth/operation-not-allowed') {
-        setAuthError('Google sign-in is not enabled in Firebase Authentication. Enable the Google provider and try again.');
-      } else if (error?.code === 'auth/popup-closed-by-user') {
-        setAuthError('The sign-in window was closed before authentication finished.');
-      } else if (error?.code === 'auth/popup-blocked') {
-        setAuthError('The browser blocked the Google sign-in window. Allow pop-ups for EDGE and try again.');
-      } else if (error?.code === 'auth/network-request-failed') {
-        setAuthError('Firebase could not reach Google sign-in. Check the network connection and try again.');
-      } else if (error?.code === 'auth/storage-unavailable') {
-        setAuthError('This browser blocks the local storage required for sign-in. Enable site storage or use a normal browser window.');
-      } else if (error?.code === 'auth/web-storage-unsupported') {
-        setAuthError('This browser blocks the local storage required for sign-in. Enable site storage or use a normal browser window.');
-      } else if (error?.code === 'auth/operation-not-supported-in-this-environment') {
-        setAuthError('Google sign-in is not supported inside this browser. Open EDGE in Chrome, Edge, Firefox, or Safari.');
-      } else if (error?.code === 'auth/invalid-credential') {
-        setAuthError('Google returned an invalid sign-in response. Try Initialize Protocol again.');
-      } else {
-        setAuthError('Sign-in failed. Check the browser console for the Firebase error details.');
-      }
-    } finally {
-      setIsAuthenticating(false);
-      setIsPoweringUp(false);
-    }
+    void signIn().catch(() => {
+      // AuthContext maps the Firebase error and moves to a recoverable screen.
+    });
   };
 
-  if (loading) return <div className="h-screen flex items-center justify-center"><LoadingScreen /></div>;
+  if (phase === 'initializing') {
+    return <div className="h-screen flex items-center justify-center"><LoadingScreen /></div>;
+  }
 
-  if (isAuthenticating) {
+  if (phase === 'redirecting') {
     return (
       <div className="h-screen flex items-center justify-center">
-        <LoadingScreen label="Authenticating_EDGE" detail="Verifying secure access..." />
+        <LoadingScreen label="Opening_Google_Sign_In" detail="Continuing securely in this browser window..." />
       </div>
     );
   }
 
-  if (isPoweringUp) {
+  if (phase === 'resolvingRedirect') {
+    return (
+      <div className="h-screen flex items-center justify-center">
+        <LoadingScreen label="Authenticating_EDGE" detail="Completing the secure Google handoff..." />
+      </div>
+    );
+  }
+
+  if (phase === 'poweringUp') {
     return (
       <div className="h-screen flex items-center justify-center">
         <LoadingScreen label="Powering_Up_EDGE" detail="Session verified. Preparing workspace..." />
+      </div>
+    );
+  }
+
+  if (phase === 'recoverableError') {
+    return (
+      <div className="flex h-full flex-col justify-center space-y-8 bg-white p-10">
+        <EdgeMark size="lg" />
+        <div className="space-y-3">
+          <p className="font-mono text-[10px] font-bold uppercase tracking-[0.4em] text-amber-600">Secure_Sign_In_Paused</p>
+          <h1 className="text-4xl font-black tracking-tighter">EDGE needs a clean browser handoff.</h1>
+          <p role="alert" className="rounded-2xl bg-amber-50 px-5 py-4 text-sm font-semibold leading-relaxed text-amber-800">
+            {authError || 'The secure sign-in handoff did not finish.'}
+          </p>
+          <p className="text-sm font-medium leading-relaxed text-slate-500">
+            Reload the canonical app to reset Firebase safely. If this browser pauses again, copy the address below into Chrome, Edge, Firefox, or Safari.
+          </p>
+        </div>
+        <button
+          type="button"
+          onClick={() => window.location.replace(CANONICAL_APP_URL)}
+          className="btn-primary w-full py-5"
+        >
+          Reload secure EDGE
+        </button>
+        <a className="break-all text-center text-xs font-bold text-slate-500 underline" href={CANONICAL_APP_URL}>
+          {CANONICAL_APP_URL}
+        </a>
       </div>
     );
   }
@@ -1073,8 +1076,8 @@ const AuthWrapper = () => {
         <div className="space-y-6 relative z-10">
           <button
             onClick={handleSignIn}
-            disabled={isAuthenticating}
-            aria-busy={isAuthenticating}
+            disabled={phase !== 'signedOut'}
+            aria-busy={phase !== 'signedOut'}
             className="w-full flex items-center justify-between p-8 bg-black text-white rounded-[2.5rem] font-bold group overflow-hidden relative shadow-2xl shadow-black/20 active:scale-95 transition-all"
           >
             <span className="relative z-10 text-xl font-black uppercase tracking-tight">Initialize Protocol</span>
@@ -1084,9 +1087,21 @@ const AuthWrapper = () => {
             <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity blur-3xl -z-0" />
           </button>
 
-          {(authError || firebaseAuthError) && (
+          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-center">
+            <p className="text-[10px] font-semibold leading-relaxed text-slate-500">
+              Using an in-app browser? Open this address in Chrome, Edge, Firefox, or Safari before signing in.
+            </p>
+            <a
+              className="mt-1 block break-all font-mono text-[9px] font-bold text-slate-700 underline decoration-slate-300 underline-offset-2"
+              href={CANONICAL_APP_URL}
+            >
+              {CANONICAL_APP_URL}
+            </a>
+          </div>
+
+          {authError && (
             <p role="alert" className="rounded-2xl bg-red-50 px-5 py-4 text-xs font-semibold leading-relaxed text-red-600">
-              {authError || firebaseAuthError}
+              {authError}
             </p>
           )}
 
