@@ -1,10 +1,37 @@
 import { FormEvent, useState } from 'react';
-import { LogOut, Pencil, User as UserIcon, X } from 'lucide-react';
+import { ChevronRight, FileText, Info, LogOut, Mail, Pencil, ShieldCheck, User as UserIcon, X } from 'lucide-react';
 import { motion } from 'motion/react';
 import { useAuth } from './AuthContext';
 import { Haptics } from '../lib/haptics';
 import { useProfileMetrics } from '../hooks/useProfileMetrics';
 import { UserProfile } from '../types';
+
+const SUPPORT_LINKS = [
+  {
+    label: 'Contact EDGE',
+    detail: 'edge911info@gmail.com',
+    href: 'mailto:edge911info@gmail.com',
+    icon: Mail,
+  },
+  {
+    label: 'About EDGE',
+    detail: 'What the marketplace is building',
+    href: `${import.meta.env.BASE_URL}about.html`,
+    icon: Info,
+  },
+  {
+    label: 'Privacy policy',
+    detail: 'How account information is used',
+    href: `${import.meta.env.BASE_URL}privacy.html`,
+    icon: ShieldCheck,
+  },
+  {
+    label: 'Terms of use',
+    detail: 'Rules for using the marketplace',
+    href: `${import.meta.env.BASE_URL}terms.html`,
+    icon: FileText,
+  },
+] as const;
 
 export function ProfileScreen({ profile }: { profile: UserProfile }) {
   const { logout, updateProfile } = useAuth();
@@ -95,6 +122,35 @@ export function ProfileScreen({ profile }: { profile: UserProfile }) {
             <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden"><motion.div initial={{ width: 0 }} animate={{ width: '82%' }} className="h-full bg-black" /></div>
           </div>
         </div>
+        <section aria-labelledby="support-and-legal-heading" className="shrink-0 border border-black/5 rounded-[2.5rem] p-4 space-y-3">
+          <div className="px-4 pt-3 pb-2">
+            <span id="support-and-legal-heading" className="col-header opacity-100 text-black">Support &amp; legal</span>
+            <p className="mt-1 text-[10px] font-medium leading-relaxed text-slate-400">Help, product information, and marketplace policies.</p>
+          </div>
+          <div className="overflow-hidden rounded-[1.75rem] border border-black/5 bg-slate-50">
+            {SUPPORT_LINKS.map(({ label, detail, href, icon: Icon }, index) => {
+              const opensNewTab = !href.startsWith('mailto:');
+              return (
+                <a
+                  key={label}
+                  href={href}
+                  target={opensNewTab ? '_blank' : undefined}
+                  rel={opensNewTab ? 'noreferrer' : undefined}
+                  className={`group flex items-center gap-3 bg-white px-4 py-4 transition-colors hover:bg-slate-50 ${index < SUPPORT_LINKS.length - 1 ? 'border-b border-black/5' : ''}`}
+                >
+                  <span className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-slate-100 text-slate-500 transition-colors group-hover:bg-black group-hover:text-white">
+                    <Icon size={17} aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0 flex-1">
+                    <span className="block text-xs font-black uppercase tracking-[0.12em] text-black">{label}</span>
+                    <span className="mt-1 block truncate text-[10px] font-medium text-slate-400">{detail}</span>
+                  </span>
+                  <ChevronRight size={16} aria-hidden="true" className="shrink-0 text-slate-300 transition-transform group-hover:translate-x-0.5 group-hover:text-black" />
+                </a>
+              );
+            })}
+          </div>
+        </section>
       </div>
       <div className="shrink-0 w-full pt-3 pb-2"><button onClick={() => { Haptics.medium(); void logout(); }} className="w-full btn-secondary text-red-500 font-black tracking-widest uppercase text-xs py-6 hover:bg-red-50">Disconnect_Session</button></div>
     </div>

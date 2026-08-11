@@ -1091,7 +1091,7 @@ const AuthWrapper = () => {
           )}
 
           <div className="flex justify-between items-center px-2">
-            <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.3em]">Build_2026.4.20</p>
+            <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.3em]">ESTD_2026.4.20</p>
             <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.3em]">SECURE_CLOUD</p>
           </div>
           <nav aria-label="Public information" className="flex justify-center gap-5 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
