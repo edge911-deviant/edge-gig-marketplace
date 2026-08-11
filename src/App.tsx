@@ -33,6 +33,8 @@ import { ProfileScreen } from './components/ProfileScreen';
 import { ReviewForm } from './components/ReviewForm';
 import { MarketplaceTelemetry, useMarketplaceTelemetry } from './hooks/useMarketplaceTelemetry';
 
+const EDGE_MARK_SRC = `${import.meta.env.BASE_URL}edge-app-icon-transparent.png`;
+
 // This file contains the app's screens and reusable UI components.
 // Most visible behavior can be traced from a button here to a Firestore
 // operation in the same component or to AuthContext.
@@ -198,7 +200,7 @@ const LoadingScreen = ({
 // real identity rather than a one-off decoration.
 const EdgeMark = ({ size = 'md' }: { size?: 'sm' | 'md' | 'lg' }) => (
   <img
-    src="/edge-app-icon-transparent.png"
+    src={EDGE_MARK_SRC}
     className={`edge-mark edge-mark-${size}`}
     alt="EDGE"
   />
@@ -1044,7 +1046,7 @@ const AuthWrapper = () => {
             animate={{ scale: 1, opacity: 1, rotate: 12 }}
             transition={{ type: 'spring', damping: 20 }}
             className="edge-mark edge-mark-lg"
-            src="/edge-app-icon-transparent.png"
+            src={EDGE_MARK_SRC}
             alt="EDGE"
           />
           <div className="space-y-2">

@@ -45,6 +45,22 @@ Do not add a protocol or port. Use `localhost`, not `http://localhost:3000`.
 
 Also confirm that the Google provider is enabled under `Authentication` → `Sign-in providers`.
 
+## GitHub Pages login
+
+The public alpha runs at:
+
+```text
+https://edge911-deviant.github.io/edge-gig-marketplace/
+```
+
+For Google login to work there, add this hostname to the same Firebase Authorized domains list:
+
+```text
+edge911-deviant.github.io
+```
+
+Add only the hostname—do not include `https://` or `/edge-gig-marketplace/`.
+
 ## How the code participates
 
 The login call is in `src/components/AuthContext.tsx`. EDGE asks Firebase for a Google authorization URI, stores its state locally, and returns directly to the app with the Google ID token. The token is then exchanged with Firebase Auth. This keeps the branded `Initialize Protocol` action while avoiding the blank cross-domain Firebase popup/redirect helper:
