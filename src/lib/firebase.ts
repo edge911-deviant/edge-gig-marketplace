@@ -12,9 +12,8 @@ const app = initializeApp(firebaseConfig);
 export const db = getFirestore(app, firebaseConfig.firestoreDatabaseId);
 export const auth = getAuth(app);
 export const functions = getFunctions(app, 'asia-south1');
-export const firebaseApiKey = firebaseConfig.apiKey;
 
-// Keep the Firebase session across the OAuth redirect and page reload. The
+// Keep the Firebase session across page reloads. The
 // auth UI is intentionally branded around a neutral "Initialize Protocol"
 // action, so persistence belongs in the auth layer rather than the screen.
 export const authPersistenceReady = setPersistence(auth, browserLocalPersistence)

@@ -997,13 +997,21 @@ const AuthWrapper = () => {
       await new Promise((resolve) => window.setTimeout(resolve, 900));
     } catch (error: any) {
       if (error?.code === 'auth/unauthorized-domain') {
-        setAuthError('Firebase does not authorize this address yet. Add localhost and 127.0.0.1 under Firebase Authentication > Settings > Authorized domains, then try Initialize Protocol again.');
+        setAuthError('Firebase does not authorize this address yet. Add the current hostname under Firebase Authentication > Settings > Authorized domains, then try Initialize Protocol again.');
       } else if (error?.code === 'auth/operation-not-allowed') {
         setAuthError('Google sign-in is not enabled in Firebase Authentication. Enable the Google provider and try again.');
       } else if (error?.code === 'auth/popup-closed-by-user') {
         setAuthError('The sign-in window was closed before authentication finished.');
+      } else if (error?.code === 'auth/popup-blocked') {
+        setAuthError('The browser blocked the Google sign-in window. Allow pop-ups for EDGE and try again.');
+      } else if (error?.code === 'auth/network-request-failed') {
+        setAuthError('Firebase could not reach Google sign-in. Check the network connection and try again.');
       } else if (error?.code === 'auth/storage-unavailable') {
-        setAuthError('This browser blocked the secure sign-in handoff. Try the same localhost address in a normal browser window.');
+        setAuthError('This browser blocks the local storage required for sign-in. Enable site storage or use a normal browser window.');
+      } else if (error?.code === 'auth/web-storage-unsupported') {
+        setAuthError('This browser blocks the local storage required for sign-in. Enable site storage or use a normal browser window.');
+      } else if (error?.code === 'auth/operation-not-supported-in-this-environment') {
+        setAuthError('Google sign-in is not supported inside this browser. Open EDGE in Chrome, Edge, Firefox, or Safari.');
       } else if (error?.code === 'auth/invalid-credential') {
         setAuthError('Google returned an invalid sign-in response. Try Initialize Protocol again.');
       } else {
