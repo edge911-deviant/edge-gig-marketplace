@@ -34,6 +34,9 @@ import { ReviewForm } from './components/ReviewForm';
 import { MarketplaceTelemetry, useMarketplaceTelemetry } from './hooks/useMarketplaceTelemetry';
 
 const EDGE_MARK_SRC = `${import.meta.env.BASE_URL}edge-app-icon-transparent.png`;
+const ABOUT_URL = `${import.meta.env.BASE_URL}about.html`;
+const PRIVACY_URL = `${import.meta.env.BASE_URL}privacy.html`;
+const TERMS_URL = `${import.meta.env.BASE_URL}terms.html`;
 
 // This file contains the app's screens and reusable UI components.
 // Most visible behavior can be traced from a button here to a Firestore
@@ -1091,6 +1094,11 @@ const AuthWrapper = () => {
             <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.3em]">Build_2026.4.20</p>
             <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.3em]">SECURE_CLOUD</p>
           </div>
+          <nav aria-label="Public information" className="flex justify-center gap-5 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
+            <a className="transition-colors hover:text-black" href={ABOUT_URL} target="_blank" rel="noreferrer">About</a>
+            <a className="transition-colors hover:text-black" href={PRIVACY_URL} target="_blank" rel="noreferrer">Privacy</a>
+            <a className="transition-colors hover:text-black" href={TERMS_URL} target="_blank" rel="noreferrer">Terms</a>
+          </nav>
         </div>
       </div>
     );
