@@ -108,11 +108,11 @@ In particular, do not remove the following without an equivalent replacement:
 - empty states and in-progress states;
 - haptic feedback where supported.
 
-### Law 8: Keep the phone-shell composition intact
+### Law 8: Keep one responsive console system
 
-The centered mobile device is the primary stage even on desktop. The shell, status strip, ticker, content hierarchy, and floating dock are a composition. Do not make individual cards look correct while allowing the overall shell to become a collection of unrelated panels.
+EDGE is a website and a mobile web app, not a phone mockup floating inside a desktop page. On narrow screens, preserve the compact status strip, ticker, single-column task hierarchy, and floating dock. On wide screens, use the available canvas for a desktop rail, multi-column discovery, and larger working surfaces while keeping the same typography, signal language, geometry, and state model.
 
-The shell must remain readable at the phone-sized frame and at a normal desktop viewport. Critical text must not be hidden behind sticky actions, compressed by flex layout, or lost to an overflow container. This matters especially on the profile screen, where the AES panel and disconnect button must remain visible together.
+The mobile composition remains the reference for touch behavior and density. The desktop composition must expand it without deleting or duplicating product actions. Critical text must not be hidden behind sticky actions, compressed by flex layout, or lost to an overflow container. This matters especially on the profile screen, where the account-state panels and disconnect action must remain reachable.
 
 ## 3. Real behavior versus visual props
 

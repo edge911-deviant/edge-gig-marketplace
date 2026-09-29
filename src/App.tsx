@@ -7,7 +7,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   Plus, Search, Briefcase, User as UserIcon,
   MapPin, DollarSign, Calendar, Star,
-  ArrowRight, X, History
+  X, History
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -32,12 +32,10 @@ import {
 import { ArtistApplications } from './components/ArtistApplications';
 import { ProfileScreen } from './components/ProfileScreen';
 import { ReviewForm } from './components/ReviewForm';
+import { PublicLandingPage } from './components/PublicLandingPage';
 import { MarketplaceTelemetry, useMarketplaceTelemetry } from './hooks/useMarketplaceTelemetry';
 
 const EDGE_MARK_SRC = `${import.meta.env.BASE_URL}edge-app-icon-transparent.png`;
-const ABOUT_URL = `${import.meta.env.BASE_URL}about.html`;
-const PRIVACY_URL = `${import.meta.env.BASE_URL}privacy.html`;
-const TERMS_URL = `${import.meta.env.BASE_URL}terms.html`;
 
 // This file contains the app's screens and reusable UI components.
 // Most visible behavior can be traced from a button here to a Firestore
@@ -46,7 +44,7 @@ const TERMS_URL = `${import.meta.env.BASE_URL}terms.html`;
 // --- Decorative / shared components ---
 
 const MarketplacePulse = ({ activeGigs, registeredArtists }: MarketplaceTelemetry) => (
-  <div className="flex items-center space-x-6 py-4 px-2 border-y border-black/5 mb-8">
+  <div className="grid grid-cols-3 items-stretch border-y border-black/5 py-4">
     <div className="flex flex-col">
       <span className="col-header opacity-100 mb-1">Active Gigs</span>
       <div className="flex items-center">
@@ -54,11 +52,11 @@ const MarketplacePulse = ({ activeGigs, registeredArtists }: MarketplaceTelemetr
         <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse" />
       </div>
     </div>
-    <div className="flex flex-col border-l border-black/5 pl-6">
+    <div className="flex flex-col border-l border-black/5 pl-4 sm:pl-6">
       <span className="col-header opacity-100 mb-1">Registered Artists</span>
       <span className="data-value text-xl">{registeredArtists ?? '—'}</span>
     </div>
-    <div className="flex flex-col border-l border-black/5 pl-6">
+    <div className="flex flex-col border-l border-black/5 pl-4 sm:pl-6">
       <span className="col-header opacity-100 mb-1">Signal Intensity</span>
       <div className="flex items-end space-x-0.5 h-4 mb-0.5">
         {[20, 60, 40, 90, 30].map((h, i) => (
@@ -217,7 +215,7 @@ const RoleSelection = () => {
   const [name, setName] = useState(user?.displayName || '');
 
   return (
-    <div className="flex flex-col p-8 space-y-8">
+    <div className="mx-auto flex min-h-[calc(100dvh-120px)] w-full max-w-4xl flex-col justify-center space-y-8 p-6 sm:p-10">
       <div className="space-y-2 text-center">
         <h1 className="text-4xl font-bold tracking-tight">Welcome to EDGE</h1>
         <p className="text-slate-500">The structured way to book gigs.</p>
@@ -267,7 +265,7 @@ const GigCard = ({ gig, onApply, applying }: { gig: Gig, onApply: (g: Gig) => Pr
   <motion.div
     whileHover={{ scale: 1.01 }}
     whileTap={{ scale: 0.98 }}
-    className="glass-card mb-4 group ring-1 ring-black/5 hover:ring-black transition-all"
+    className="glass-card group flex h-full flex-col justify-between ring-1 ring-black/5 transition-all hover:ring-black"
   >
     <div className="flex justify-between items-start">
       <div className="space-y-1">
@@ -286,7 +284,7 @@ const GigCard = ({ gig, onApply, applying }: { gig: Gig, onApply: (g: Gig) => Pr
       {gig.description}
     </p>
 
-    <div className="flex items-center justify-between pt-6 mt-6 border-t border-black/5">
+    <div className="mt-6 flex items-center justify-between border-t border-black/5 pt-6">
       <div className="flex space-x-6">
         <div className="flex flex-col">
           <span className="col-header">Genre</span>
@@ -370,26 +368,29 @@ const ArtistHome = ({ telemetry }: { telemetry: MarketplaceTelemetry }) => {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto pb-32 no-scrollbar bg-slate-50/50 relative">
+    <div className="relative flex-1 overflow-y-auto bg-slate-50/50 pb-32 no-scrollbar lg:pb-12">
       <div className="scanline" />
-      <header className="p-10 pb-2">
+      <header className="px-6 pb-2 pt-8 sm:px-10 lg:px-12 lg:pt-12 xl:px-16">
         <div className="flex items-center justify-between">
-          <EdgeMark size="sm" />
+          <span className="lg:hidden"><EdgeMark size="sm" /></span>
           <div className="flex items-center space-x-2">
             <span className="text-[10px] font-black tracking-widest text-slate-300 uppercase">SYS_ACTIVE</span>
           </div>
         </div>
-        <div className="mt-12">
+        <div className="mt-10 lg:mt-4">
           <span className="col-header opacity-100 text-black">MARKETPLACE SIGNAL</span>
-          <h2 className="text-5xl font-black tracking-tighter mt-2 leading-[0.85]">Available<br/>Opportunities</h2>
+          <h2 className="mt-2 text-5xl font-black leading-[0.85] tracking-tighter lg:text-7xl">Available<br/>Opportunities</h2>
         </div>
       </header>
 
-      <div className="px-10 pb-6">
-        <LiveRadar activeGigs={telemetry.activeGigs} />
-        <MarketplacePulse {...telemetry} />
-
-        <div className="relative mb-4">
+      <div className="px-6 pb-6 sm:px-10 lg:px-12 xl:px-16">
+        <div className="mt-8 grid gap-6 xl:grid-cols-[minmax(0,1.25fr)_minmax(390px,0.75fr)] xl:items-start">
+          <div className="xl:sticky xl:top-0">
+            <LiveRadar activeGigs={telemetry.activeGigs} />
+          </div>
+          <div>
+            <MarketplacePulse {...telemetry} />
+            <div className="relative mb-4 mt-6">
           <Search size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
           <input
             type="search"
@@ -399,9 +400,9 @@ const ArtistHome = ({ telemetry }: { telemetry: MarketplaceTelemetry }) => {
             placeholder="Search title, location, genre..."
             className="w-full rounded-3xl border border-black/5 bg-white py-4 pl-12 pr-5 text-sm font-semibold outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
           />
-        </div>
+            </div>
 
-        <div className="flex space-x-2 mb-10 overflow-x-auto no-scrollbar pb-2">
+            <div className="flex space-x-2 overflow-x-auto pb-2 no-scrollbar">
           {GIG_GENRES.map(genre => (
             <button
               key={genre}
@@ -413,6 +414,8 @@ const ArtistHome = ({ telemetry }: { telemetry: MarketplaceTelemetry }) => {
               {genre}
             </button>
           ))}
+            </div>
+          </div>
         </div>
 
         {applicationFeedback && (
@@ -431,7 +434,7 @@ const ArtistHome = ({ telemetry }: { telemetry: MarketplaceTelemetry }) => {
         )}
       </div>
 
-      <div className="px-8 pb-12">
+      <div className="px-6 pb-12 sm:px-10 lg:px-12 xl:px-16">
         {!hasLoadedGigs && (
           <div className="text-center p-20 border-2 border-dashed border-slate-200 rounded-[3rem] text-slate-300 font-mono text-[10px] uppercase tracking-widest">
             <motion.span animate={{ opacity: [0.3, 1] }} transition={{ duration: 1, repeat: Infinity, repeatType: 'reverse' }}>
@@ -444,7 +447,7 @@ const ArtistHome = ({ telemetry }: { telemetry: MarketplaceTelemetry }) => {
             {gigs.length === 0 ? 'No open signals found.' : 'No signals match these filters.'}
           </div>
         )}
-        <div className="space-y-4">
+        <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
           {visibleGigs.map(gig => (
             <GigCard key={gig.id} gig={gig} onApply={handleApply} applying={applyingTo === gig.id} />
           ))}
@@ -737,34 +740,34 @@ const OrganiserDashboard = ({ telemetry }: { telemetry: MarketplaceTelemetry }) 
   const acceptedApplication = applications.find((application) => application.id === selectedGig?.acceptedApplicationId);
 
   return (
-    <div className="flex-1 overflow-y-auto pb-32 no-scrollbar relative">
+    <div className="relative flex-1 overflow-y-auto pb-32 no-scrollbar lg:pb-12">
       <div className="scanline" />
-      <header className="p-10 pb-2">
+      <header className="px-6 pb-2 pt-8 sm:px-10 lg:px-12 lg:pt-12 xl:px-16">
         <div className="flex justify-between items-center">
-          <EdgeMark size="sm" />
+          <span className="lg:hidden"><EdgeMark size="sm" /></span>
           <div className="flex items-center space-x-4">
             <div className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
             <History size={18} className="text-slate-300" />
           </div>
         </div>
-        <div className="mt-12">
+        <div className="mt-10 lg:mt-4">
           <span className="col-header opacity-100 text-black">ADMIN CONSOLE</span>
-          <h2 className="text-5xl font-black tracking-tighter mt-2 leading-[0.85]">Gig Control</h2>
+          <h2 className="mt-2 text-5xl font-black leading-[0.85] tracking-tighter lg:text-7xl">Gig Control</h2>
         </div>
       </header>
 
-      <div className="px-10 pb-6">
+      <div className="px-6 pb-6 sm:px-10 lg:px-12 xl:px-16">
         <MarketplacePulse {...telemetry} />
       </div>
 
-      <div className="px-8 mt-2">
+      <div className="mt-2 px-6 sm:px-10 lg:px-12 xl:px-16">
         {gigs.length === 0 && (
           <div className="p-12 border-2 border-dashed border-slate-100 rounded-[2.5rem] text-center space-y-2">
             <p className="font-mono text-[9px] text-slate-300 uppercase tracking-widest">No Active Missions</p>
             <p className="text-xs text-slate-400 font-medium">Post your first gig to get started.</p>
           </div>
         )}
-        <div className="space-y-3">
+        <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
           {gigs.map(gig => (
             <div
               key={gig.id}
@@ -808,7 +811,7 @@ const OrganiserDashboard = ({ telemetry }: { telemetry: MarketplaceTelemetry }) 
               animate={{ y: 0 }}
               exit={{ y: "100%" }}
               transition={{ type: 'spring', damping: 30, stiffness: 300 }}
-              className="w-full max-w-[420px] bg-white rounded-t-[3.5rem] relative overflow-hidden flex flex-col h-[85%] shadow-2xl pointer-events-auto"
+              className="pointer-events-auto relative flex h-[88%] w-full max-w-[520px] flex-col overflow-hidden rounded-t-[3.5rem] bg-white shadow-2xl lg:mb-8 lg:h-[88%] lg:max-w-3xl lg:rounded-[3rem]"
             >
               <div className="flex-1 overflow-y-auto no-scrollbar p-10">
                 <div className="flex justify-between items-center mb-12">
@@ -894,24 +897,74 @@ const MainApp = () => {
   if (!profile) return <RoleSelection />;
 
   return (
-    <div className="flex flex-col h-full overflow-hidden bg-white">
+    <div className="flex h-[100dvh] flex-col overflow-hidden bg-white">
       <StatusBar />
       <ActivityTicker recentGigs={telemetry.recentGigs} />
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={activeTab}
-          initial={{ opacity: 0, x: 10 }}
-          animate={{ opacity: 1, x: 0 }}
-          exit={{ opacity: 0, x: -10 }}
-          className="flex-1 min-h-0 overflow-hidden flex flex-col"
-        >
-          {activeTab === 'home' && (profile.role === 'artist' ? <ArtistHome telemetry={telemetry} /> : <OrganiserDashboard telemetry={telemetry} />)}
-          {activeTab === 'applications' && profile.role === 'artist' && <ArtistApplications />}
-          {activeTab === 'profile' && <ProfileScreen profile={profile} />}
-        </motion.div>
-      </AnimatePresence>
+      <div className="flex min-h-0 flex-1">
+        <aside className="desktop-rail" aria-label="Workspace navigation">
+          <div className="desktop-rail-brand">
+            <EdgeMark size="sm" />
+            <div>
+              <p className="text-xl font-black tracking-[-0.07em]">EDGE</p>
+              <p className="font-mono text-[8px] font-bold uppercase tracking-[0.22em] text-slate-400">Workspace_01</p>
+            </div>
+          </div>
+          <nav className="mt-8 space-y-2">
+            <button
+              type="button"
+              onClick={() => setActiveTab('home')}
+              className={`desktop-rail-button ${activeTab === 'home' ? 'desktop-rail-button-active' : ''}`}
+            >
+              <Briefcase size={18} />{profile.role === 'artist' ? 'Marketplace' : 'Gig control'}
+            </button>
+            {profile.role === 'artist' && (
+              <button
+                type="button"
+                onClick={() => setActiveTab('applications')}
+                className={`desktop-rail-button ${activeTab === 'applications' ? 'desktop-rail-button-active' : ''}`}
+              >
+                <History size={18} />Applications
+              </button>
+            )}
+            <button
+              type="button"
+              onClick={() => setActiveTab('profile')}
+              className={`desktop-rail-button ${activeTab === 'profile' ? 'desktop-rail-button-active' : ''}`}
+            >
+              <UserIcon size={18} />Profile node
+            </button>
+            {profile.role === 'organiser' && (
+              <button type="button" onClick={() => setIsPosting(true)} className="desktop-rail-button mt-4 border border-black/10 text-black">
+                <Plus size={18} />Post a gig
+              </button>
+            )}
+          </nav>
+          <div className="desktop-rail-profile">
+            <div className="mb-3 flex items-center gap-2">
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-emerald-600">Node active</span>
+            </div>
+            <p className="truncate text-sm font-black">{profile.name}</p>
+            <p className="mt-1 text-[10px] font-semibold capitalize text-slate-400">{profile.role} account</p>
+          </div>
+        </aside>
 
-      <nav className="fixed bottom-10 left-0 right-0 z-40 px-8 pointer-events-none">
+        <AnimatePresence mode="wait">
+          <motion.main
+            key={activeTab}
+            initial={{ opacity: 0, x: 10 }}
+            animate={{ opacity: 1, x: 0 }}
+            exit={{ opacity: 0, x: -10 }}
+            className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
+          >
+            {activeTab === 'home' && (profile.role === 'artist' ? <ArtistHome telemetry={telemetry} /> : <OrganiserDashboard telemetry={telemetry} />)}
+            {activeTab === 'applications' && profile.role === 'artist' && <ArtistApplications />}
+            {activeTab === 'profile' && <ProfileScreen profile={profile} />}
+          </motion.main>
+        </AnimatePresence>
+      </div>
+
+      <nav className="mobile-dock" aria-label="Workspace navigation">
         <div className="max-w-[320px] mx-auto bg-black/90 backdrop-blur-2xl px-2 py-2 rounded-[2.5rem] shadow-2xl shadow-black/40 border border-white/10 flex items-center justify-between pointer-events-auto">
           <button
             onClick={() => { Haptics.light(); setActiveTab('home'); }}
@@ -957,22 +1010,25 @@ const MainApp = () => {
 
       <AnimatePresence>
         {isPosting && (
-          <motion.div
-            initial={{ y: "100%" }}
-            animate={{ y: 0 }}
-            exit={{ y: "100%" }}
-            className="fixed inset-0 z-[60] bg-white mobile-container"
-          >
-            <div className="relative">
+          <div className="fixed inset-0 z-[90] flex items-end justify-center bg-black/60 p-0 backdrop-blur-md lg:items-center lg:p-8">
+            <motion.div
+              initial={{ y: "100%" }}
+              animate={{ y: 0 }}
+              exit={{ y: "100%" }}
+              className="h-[92dvh] w-full overflow-y-auto rounded-t-[3rem] bg-white shadow-2xl lg:h-auto lg:max-h-[92dvh] lg:max-w-3xl lg:rounded-[3rem]"
+            >
+              <div className="relative">
               <button
                 onClick={() => setIsPosting(false)}
-                className="absolute top-8 right-8 p-2 text-slate-400"
+                aria-label="Close post gig form"
+                className="absolute right-8 top-8 z-10 rounded-full bg-slate-100 p-2 text-slate-500 transition hover:bg-black hover:text-white"
               >
                 <X />
               </button>
               <PostGig onSuccess={() => { setIsPosting(false); setActiveTab('home'); }} />
-            </div>
-          </motion.div>
+              </div>
+            </motion.div>
+          </div>
         )}
       </AnimatePresence>
     </div>
@@ -983,6 +1039,7 @@ const AuthWrapper = () => {
   // AuthContext owns the complete redirect lifecycle so a delayed Firebase
   // callback cannot be mistaken for an ordinary signed-out page.
   const { user, phase, signIn, authError, clearAuthError } = useAuth();
+  const previewLanding = new URLSearchParams(window.location.search).get('preview') === 'landing';
 
   const handleSignIn = () => {
     clearAuthError();
@@ -1047,92 +1104,27 @@ const AuthWrapper = () => {
     );
   }
 
-  if (!user) {
-    return (
-      <div className="flex flex-col p-10 h-full justify-center space-y-16 bg-white relative overflow-hidden">
-        <div className="scanline" />
-        <div className="absolute -top-20 -left-20 w-80 h-80 bg-slate-100 rounded-full blur-[100px] opacity-50" />
-        <div className="absolute -bottom-20 -right-20 w-80 h-80 bg-neutral-200 rounded-full blur-[100px] opacity-30" />
-
-        <div className="space-y-6 relative z-10">
-          <motion.img
-            initial={{ scale: 0.8, opacity: 0, rotate: -20 }}
-            animate={{ scale: 1, opacity: 1, rotate: 12 }}
-            transition={{ type: 'spring', damping: 20 }}
-            className="edge-mark edge-mark-lg"
-            src={EDGE_MARK_SRC}
-            alt="EDGE"
-          />
-          <div className="space-y-2">
-            <h1 className="text-7xl font-black tracking-tighter leading-tight">EDGE</h1>
-            <div className="flex items-center space-x-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-              <p className="text-[10px] font-mono font-bold uppercase tracking-[0.4em] opacity-40">System_Initializing</p>
-            </div>
-          </div>
-          <p className="text-2xl text-slate-500 font-semibold leading-tight max-w-[280px]">Structured performance booking protocol.</p>
-        </div>
-
-        <div className="space-y-6 relative z-10">
-          <button
-            onClick={handleSignIn}
-            disabled={phase !== 'signedOut'}
-            aria-busy={phase !== 'signedOut'}
-            className="w-full flex items-center justify-between p-8 bg-black text-white rounded-[2.5rem] font-bold group overflow-hidden relative shadow-2xl shadow-black/20 active:scale-95 transition-all"
-          >
-            <span className="relative z-10 text-xl font-black uppercase tracking-tight">Initialize Protocol</span>
-            <div className="relative z-10 w-12 h-12 bg-white/20 rounded-full flex items-center justify-center group-hover:translate-x-2 transition-transform">
-              <ArrowRight size={24} />
-            </div>
-            <div className="absolute inset-0 bg-gradient-to-r from-emerald-500 to-blue-500 opacity-0 group-hover:opacity-100 transition-opacity blur-3xl -z-0" />
-          </button>
-
-          <div className="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-center">
-            <p className="text-[10px] font-semibold leading-relaxed text-slate-500">
-              Using an in-app browser? Open this address in Chrome, Edge, Firefox, or Safari before signing in.
-            </p>
-            <a
-              className="mt-1 block break-all font-mono text-[9px] font-bold text-slate-700 underline decoration-slate-300 underline-offset-2"
-              href={CANONICAL_APP_URL}
-            >
-              {CANONICAL_APP_URL}
-            </a>
-          </div>
-
-          {authError && (
-            <p role="alert" className="rounded-2xl bg-red-50 px-5 py-4 text-xs font-semibold leading-relaxed text-red-600">
-              {authError}
-            </p>
-          )}
-
-          <div className="flex justify-between items-center px-2">
-            <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.3em]">ESTD_2026.4.20</p>
-            <p className="text-[9px] text-slate-400 font-black uppercase tracking-[0.3em]">SECURE_CLOUD</p>
-          </div>
-          <nav aria-label="Public information" className="flex justify-center gap-5 text-[10px] font-bold uppercase tracking-[0.18em] text-slate-400">
-            <a className="transition-colors hover:text-black" href={ABOUT_URL} target="_blank" rel="noreferrer">About</a>
-            <a className="transition-colors hover:text-black" href={PRIVACY_URL} target="_blank" rel="noreferrer">Privacy</a>
-            <a className="transition-colors hover:text-black" href={TERMS_URL} target="_blank" rel="noreferrer">Terms</a>
-          </nav>
-        </div>
-      </div>
-    );
-  }
-
+  if (!user || previewLanding) return (
+    <PublicLandingPage
+      onSignIn={handleSignIn}
+      authError={authError}
+      busy={!user && phase !== 'signedOut'}
+      isSignedIn={Boolean(user)}
+      onOpenWorkspace={() => window.location.replace(window.location.pathname)}
+    />
+  );
   return <MainApp />;
 };
 
 export default function App() {
-  // The provider supplies auth/profile state; the mobile-container class defines
-  // the phone-like presentation visible on desktop screens.
+  // The provider supplies auth/profile state. The responsive shell keeps the
+  // compact mobile console intact while giving wide screens a full workspace.
   console.log('[App] Mounting...');
   return (
     <ErrorBoundary>
       <AuthProvider>
-        <div className="min-h-screen flex items-center justify-center py-12 md:py-24">
-          <div className="mobile-container">
-            <AuthWrapper />
-          </div>
+        <div className="edge-app-shell">
+          <AuthWrapper />
         </div>
       </AuthProvider>
     </ErrorBoundary>

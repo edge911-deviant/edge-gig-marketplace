@@ -56,13 +56,14 @@ export function ArtistApplications() {
   };
 
   return (
-    <div className="flex-1 overflow-y-auto bg-slate-50/50 p-8 pb-32 no-scrollbar">
-      <header className="mb-10 pt-3">
+    <div className="flex-1 overflow-y-auto bg-slate-50/50 px-6 pb-32 pt-8 no-scrollbar sm:px-10 lg:px-12 lg:pb-12 lg:pt-12 xl:px-16">
+      <header className="mb-10 max-w-3xl pt-3">
         <span className="col-header opacity-100 text-black">ARTIST JOURNEY</span>
         <div className="mt-2 flex items-center gap-3">
-          <History size={28} />
-          <h2 className="text-4xl font-black tracking-tighter">Application Signals</h2>
+          <History size={32} />
+          <h2 className="text-4xl font-black tracking-tighter lg:text-6xl">Application Signals</h2>
         </div>
+        <p className="mt-4 max-w-xl text-sm font-medium leading-6 text-slate-500">Every application, booking decision and completed gig stays visible in one place.</p>
       </header>
 
       {feedback && <p role="alert" className="mb-4 rounded-2xl bg-red-50 p-4 text-xs font-semibold text-red-600">{feedback}</p>}
@@ -73,7 +74,7 @@ export function ArtistApplications() {
         </div>
       )}
 
-      <div className="space-y-5">
+      <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
         {sortedApplications.map((application) => {
           const gig = gigsById.get(application.gigId);
           const displayStatus = gig?.status === 'completed' ? 'completed' : application.status;

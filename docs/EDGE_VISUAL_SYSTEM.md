@@ -57,17 +57,17 @@ Existing shared classes encode the pattern:
 
 Use uppercase machine language for short labels, not for paragraphs. Use sentence case for explanations and form guidance. Large names and primary product phrases should remain human-readable even when surrounding labels are cryptic.
 
-## 4. Geometry and device frame
+## 4. Geometry and responsive frame
 
-The main stage is a phone-like container, even on desktop:
+The main stage is one responsive console system:
 
-- Mobile width is capped around `420px`.
-- Larger viewports use the same narrow device stage rather than stretching cards to the full browser width.
-- The shell is white with a pale `slate-100` ring around it.
-- The shell uses very large rounded corners, approximately `3.5rem`.
-- The shell shadow is broad and soft: the device should float above the warm page, never look like a hard browser panel.
-- The frame is a flex column with controlled overflow; content scrolling belongs inside the device.
-- The floating dock sits visually outside/over the lower edge of the content without covering critical content.
+- Mobile uses the full viewport as a compact white device surface; do not add an artificial outer phone frame.
+- Narrow screens keep the single-column task flow and floating black dock.
+- Desktop uses the full browser width with a calm warm canvas, a persistent left rail, and multi-column content where that improves scanning.
+- The status strip and activity ticker remain shared anchors at every signed-in breakpoint.
+- Landing-page imagery may use large rounded editorial frames, while working screens stay primarily white and slate for legibility.
+- The shell is a flex column with controlled overflow; content scrolling belongs inside the main workspace.
+- The floating dock and desktop rail must never cover critical content or duplicate competing actions.
 
 Internal cards use a family of large radii, from about `2rem` to `2.5rem`. Buttons use approximately `2rem` pill radii. Borders are pale and shadows are restrained. Rounded geometry is how the product gets its hardware-like feel; avoid mixing sharp rectangles into the core shell without a semantic reason.
 
@@ -79,15 +79,14 @@ The glyph is the visual “device boot” cue. Its tilt gives EDGE a little inst
 
 ## 5. Layout anatomy
 
-The signed-in shell follows this order:
+The signed-in shell follows this responsive order:
 
 ```text
-warm page canvas
-  centered white device frame + pale ring + soft shadow
-    StatusBar
-    ActivityTicker (black signal strip)
-    screen content
-    floating black navigation dock
+white responsive workspace
+  StatusBar
+  ActivityTicker (black signal strip)
+  desktop: left navigation rail + wide screen content
+  mobile: single-column screen content + floating black dock
 ```
 
 ### StatusBar
@@ -108,7 +107,7 @@ Content uses generous vertical spacing, strong horizontal alignment, and one dom
 
 ### Floating dock
 
-The black dock is a compact, high-contrast control strip. Its briefcase, plus, and user actions are separated by shape and active-state treatment. The centre plus is visually prominent for posting; the active destination is white against the black shell. Keep the dock rounded, floating, and accessible without making it obscure the screen.
+The black dock is the mobile control strip. Its briefcase, plus, and user actions are separated by shape and active-state treatment. The centre plus is visually prominent for posting; the active destination is white against the black shell. At desktop breakpoints, replace it with the labeled left rail so navigation is discoverable and content is never covered. Do not render both navigation systems at the same time.
 
 ## 6. Profile screen hierarchy
 

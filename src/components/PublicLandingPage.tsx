@@ -1,0 +1,297 @@
+import {
+  ArrowRight,
+  BriefcaseBusiness,
+  CalendarCheck,
+  Check,
+  MapPin,
+  Radio,
+  Search,
+  ShieldCheck,
+  Sparkles,
+  Star,
+  UserRoundSearch,
+} from 'lucide-react';
+import { motion } from 'motion/react';
+
+const EDGE_MARK_SRC = `${import.meta.env.BASE_URL}edge-app-icon-transparent.png`;
+const HERO_IMAGE_SRC = `${import.meta.env.BASE_URL}edge-live-stage.png`;
+
+const previewGigs = [
+  { date: '18 OCT', title: 'Indie night support act', place: 'Kolkata · The Black Box', genre: 'Indie', budget: '₹18,000' },
+  { date: '02 NOV', title: 'Rooftop jazz trio', place: 'Mumbai · Lower Parel', genre: 'Jazz', budget: '₹32,000' },
+  { date: '15 NOV', title: 'Electronic live set', place: 'Bengaluru · Indiranagar', genre: 'Electronic', budget: '₹25,000' },
+];
+
+const steps = [
+  {
+    number: '01',
+    title: 'Publish a clear brief',
+    body: 'Organisers set the date, place, genre, budget and performance requirements up front.',
+    icon: BriefcaseBusiness,
+  },
+  {
+    number: '02',
+    title: 'Find the right signal',
+    body: 'Artists search real opportunities, filter by genre and apply once with their profile attached.',
+    icon: Search,
+  },
+  {
+    number: '03',
+    title: 'Choose with context',
+    body: 'Applications, fit, history and the gig brief stay together so organisers can decide clearly.',
+    icon: UserRoundSearch,
+  },
+  {
+    number: '04',
+    title: 'Close the trust loop',
+    body: 'Completion, cancellations and mutual reviews build a record that makes the next booking easier.',
+    icon: CalendarCheck,
+  },
+];
+
+type PublicLandingPageProps = {
+  onSignIn: () => void;
+  authError?: string | null;
+  busy?: boolean;
+  isSignedIn?: boolean;
+  onOpenWorkspace?: () => void;
+};
+
+export function PublicLandingPage({
+  onSignIn,
+  authError,
+  busy = false,
+  isSignedIn = false,
+  onOpenWorkspace,
+}: PublicLandingPageProps) {
+  const primaryAction = isSignedIn && onOpenWorkspace ? onOpenWorkspace : onSignIn;
+  const primaryLabel = isSignedIn ? 'Open workspace' : 'Join EDGE';
+
+  return (
+    <div className="public-site min-h-screen overflow-x-clip bg-[#f8f7f4] text-[#0a0a0a]">
+      <header className="site-nav-wrap">
+        <nav className="site-nav" aria-label="Main navigation">
+          <a href="#top" className="flex items-center gap-3" aria-label="EDGE home">
+            <img className="h-10 w-10 rounded-xl object-contain" src={EDGE_MARK_SRC} alt="" />
+            <span className="text-xl font-black tracking-[-0.08em]">EDGE</span>
+          </a>
+          <div className="hidden items-center gap-8 text-xs font-bold uppercase tracking-[0.16em] text-slate-500 md:flex">
+            <a className="transition-colors hover:text-black" href="#opportunities">Opportunities</a>
+            <a className="transition-colors hover:text-black" href="#how-it-works">How it works</a>
+            <a className="transition-colors hover:text-black" href="#for-every-side">Who it is for</a>
+          </div>
+          <button type="button" onClick={primaryAction} disabled={busy} className="site-nav-cta">
+            {primaryLabel}<ArrowRight size={15} aria-hidden="true" />
+          </button>
+        </nav>
+      </header>
+
+      <main id="top">
+        <section className="hero-grid">
+          <div className="hero-copy">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              className="signal-pill"
+            >
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+              Live performance network · Alpha
+            </motion.div>
+            <motion.h1
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.08 }}
+              className="hero-title"
+            >
+              Find the stage.<br />Book the right act.<br /><span>Keep it clear.</span>
+            </motion.h1>
+            <motion.p
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.14 }}
+              className="hero-deck"
+            >
+              EDGE brings artists and organisers into one precise workflow—from an open brief to a completed performance and a reputation both sides can trust.
+            </motion.p>
+            <motion.div
+              initial={{ opacity: 0, y: 18 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.2 }}
+              className="flex flex-col gap-3 sm:flex-row"
+            >
+              <button type="button" onClick={primaryAction} disabled={busy} className="hero-primary">
+                {busy ? 'Opening secure sign-in…' : primaryLabel}<ArrowRight size={19} aria-hidden="true" />
+              </button>
+              <a href="#opportunities" className="hero-secondary">Explore the network</a>
+            </motion.div>
+            {authError && (
+              <p role="alert" className="mt-5 max-w-xl rounded-2xl bg-red-50 px-5 py-4 text-sm font-semibold text-red-700">
+                {authError}
+              </p>
+            )}
+            <div className="hero-principles" aria-label="EDGE platform principles">
+              <span><Check size={14} />One clear gig brief</span>
+              <span><Check size={14} />One application per artist</span>
+              <span><Check size={14} />Real booking history</span>
+            </div>
+          </div>
+
+          <motion.div
+            initial={{ opacity: 0, scale: 0.985 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            className="hero-visual"
+          >
+            <img src={HERO_IMAGE_SRC} alt="An independent band performing to a crowd in an intimate venue" />
+            <div className="hero-image-shade" />
+            <div className="hero-image-label">
+              <span className="font-mono text-[9px] font-bold uppercase tracking-[0.26em] text-white/60">Signal_01 · Live</span>
+              <p>Where the next show becomes a real booking.</p>
+            </div>
+            <div className="hero-floating-card">
+              <div className="flex items-center justify-between">
+                <span className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-slate-400">Open signal</span>
+                <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-emerald-600"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Active</span>
+              </div>
+              <h2>Alt-rock support slot</h2>
+              <p><MapPin size={12} />Kolkata · 18 Oct · ₹18,000</p>
+            </div>
+          </motion.div>
+        </section>
+
+        <section className="signal-strip" aria-label="Product promise">
+          <div>
+            <Radio size={18} />
+            <span>Open opportunities</span>
+          </div>
+          <p>Structured live-performance booking for artists, organisers and the people building better shows.</p>
+          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/50">EDGE_01 / Network online</span>
+        </section>
+
+        <section id="opportunities" className="site-section">
+          <div className="section-heading-row">
+            <div>
+              <span className="section-kicker">Signal board</span>
+              <h2 className="section-title">See the opportunity.<br />Know what it needs.</h2>
+            </div>
+            <p className="section-intro">No vague social post, lost DM, or missing fee. EDGE keeps the useful details together so artists can decide quickly and organisers receive relevant applications.</p>
+          </div>
+          <div className="opportunity-grid">
+            {previewGigs.map((gig, index) => (
+              <article key={gig.title} className={`opportunity-card ${index === 0 ? 'opportunity-card-featured' : ''}`}>
+                <div className="flex items-start justify-between gap-4">
+                  <span className="opportunity-date">{gig.date}</span>
+                  <span className="opportunity-genre">{gig.genre}</span>
+                </div>
+                <div>
+                  <h3>{gig.title}</h3>
+                  <p><MapPin size={13} />{gig.place}</p>
+                </div>
+                <div className="flex items-end justify-between border-t border-current/10 pt-5">
+                  <div><span className="section-kicker opacity-60">Artist fee</span><strong>{gig.budget}</strong></div>
+                  <ArrowRight size={20} aria-hidden="true" />
+                </div>
+              </article>
+            ))}
+          </div>
+          <p className="mt-4 font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400">Preview data shown for product demonstration.</p>
+        </section>
+
+        <section id="how-it-works" className="site-section border-y border-black/5 bg-white">
+          <div className="section-heading-row">
+            <div>
+              <span className="section-kicker">The protocol</span>
+              <h2 className="section-title">From brief to encore,<br />without the guesswork.</h2>
+            </div>
+            <p className="section-intro">The marketplace follows the real booking journey. Each step records what happened and leaves both sides with a clear next action.</p>
+          </div>
+          <div className="steps-grid">
+            {steps.map(({ number, title, body, icon: Icon }) => (
+              <article key={number} className="step-card">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-xs font-black text-slate-300">{number}</span>
+                  <span className="step-icon"><Icon size={20} /></span>
+                </div>
+                <h3>{title}</h3>
+                <p>{body}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section id="for-every-side" className="site-section">
+          <div className="role-grid">
+            <div className="role-panel role-panel-dark">
+              <span className="section-kicker text-white/50">For artists</span>
+              <h2>More time performing.<br />Less time chasing replies.</h2>
+              <ul>
+                <li><Check size={16} />Search gigs by title, genre and place</li>
+                <li><Check size={16} />Track every application and booking state</li>
+                <li><Check size={16} />Build trust from completed work and reviews</li>
+              </ul>
+              <button type="button" onClick={primaryAction}>Find your next gig <ArrowRight size={17} /></button>
+            </div>
+            <div className="role-panel">
+              <span className="section-kicker">For organisers</span>
+              <h2>One control room for every live booking.</h2>
+              <ul>
+                <li><Check size={16} />Post a complete opportunity in minutes</li>
+                <li><Check size={16} />Review artists with useful context attached</li>
+                <li><Check size={16} />Manage hire, completion and review states</li>
+              </ul>
+              <button type="button" onClick={primaryAction}>Post a clear brief <ArrowRight size={17} /></button>
+            </div>
+          </div>
+        </section>
+
+        <section className="trust-section">
+          <div className="trust-copy">
+            <span className="section-kicker text-white/50">Trust is operational</span>
+            <h2>A marketplace should remember more than a star rating.</h2>
+            <p>EDGE keeps the important states visible: who owns the gig, who applied, what was accepted, whether the show was completed and what both sides said afterward.</p>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <div><ShieldCheck /><span>Authenticated identity</span><small>Google sign-in and role-bound profiles</small></div>
+              <div><Star /><span>Mutual reviews</span><small>Feedback after completed bookings</small></div>
+              <div><CalendarCheck /><span>Booking lifecycle</span><small>Open, filled, completed or cancelled</small></div>
+              <div><Sparkles /><span>Fit analysis</span><small>Contextual support, never a hidden decision</small></div>
+            </div>
+          </div>
+          <div className="trust-console" aria-label="Example EDGE reliability summary">
+            <div className="flex items-center justify-between border-b border-white/10 pb-5">
+              <span className="font-mono text-[10px] uppercase tracking-[0.24em] text-white/50">Artist reliability node</span>
+              <span className="h-2 w-2 rounded-full bg-emerald-500" />
+            </div>
+            <div className="py-8">
+              <span className="font-serif text-xs font-black italic uppercase tracking-[0.18em] text-white/40">History, not hype</span>
+              <p className="mt-2 text-5xl font-black tracking-[-0.07em]">Every signal<br />has a source.</p>
+            </div>
+            <div className="space-y-3 border-t border-white/10 pt-5 text-sm">
+              <p><span>Completed gigs</span><strong>Recorded</strong></p>
+              <p><span>Cancellations</span><strong>Visible</strong></p>
+              <p><span>Reviews</span><strong>Mutual</strong></p>
+              <p><span>Reliability</span><strong>History-based</strong></p>
+            </div>
+          </div>
+        </section>
+
+        <section className="final-cta">
+          <img src={EDGE_MARK_SRC} alt="" />
+          <span className="section-kicker">EDGE network</span>
+          <h2>Make the next booking<br />feel like progress.</h2>
+          <p>Join the prelaunch alpha and help shape a clearer live-performance marketplace.</p>
+          <button type="button" onClick={primaryAction} disabled={busy}>{primaryLabel}<ArrowRight size={18} /></button>
+        </section>
+      </main>
+
+      <footer className="site-footer">
+        <div className="flex items-center gap-3"><img src={EDGE_MARK_SRC} alt="" /><strong>EDGE</strong></div>
+        <p>Structured performance booking protocol.</p>
+        <nav aria-label="Public information">
+          <a href={`${import.meta.env.BASE_URL}about.html`}>About</a>
+          <a href={`${import.meta.env.BASE_URL}privacy.html`}>Privacy</a>
+          <a href={`${import.meta.env.BASE_URL}terms.html`}>Terms</a>
+        </nav>
+      </footer>
+    </div>
+  );
+}
