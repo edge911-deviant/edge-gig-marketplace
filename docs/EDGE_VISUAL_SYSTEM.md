@@ -44,7 +44,7 @@ The current font stack is part of the brand:
 
 - `Inter`, weights 300-800: body copy, headings, controls, names, and forms.
 - `JetBrains Mono`: telemetry values, device labels, timestamps, status codes, and ticker copy.
-- `Playfair Display`, italic 900: small editorial section labels such as `TRUST`, `RELIABILITY`, and `SYSTEM PREFERENCES`.
+- `Playfair Display`, italic 900: small editorial section labels such as `TRUST`, `RELIABILITY`, and `ACCOUNT BOUNDARY`.
 
 The contrast between Inter's practical geometry, JetBrains Mono's machine readout, and Playfair's italic human/editorial note is intentional. Do not replace all three with one font “for consistency.” The contrast is the consistency.
 
@@ -103,7 +103,7 @@ It should scroll continuously and quietly, like a background signal. It must not
 
 ### Content surface
 
-Content uses generous vertical spacing, strong horizontal alignment, and one dominant task per screen. The artist feed prioritizes the next opportunity. The organiser dashboard prioritizes the current gig and applicant decisions. The profile prioritizes identity and session control.
+Content uses generous vertical spacing, strong horizontal alignment, and one dominant task per screen. The artist feed prioritizes the next opportunity. Organiser and venue dashboards prioritize the current booking and applicant decisions. Audience discovery prioritizes place, genre, and clearly labelled live signals. The profile prioritizes identity and role-appropriate preferences.
 
 ### Floating dock
 
@@ -118,13 +118,13 @@ The profile is not a settings dump. It is a live account node:
 3. Large black avatar tile with the grey user glyph.
 4. Emerald `NODE_ACTIVE` status line.
 5. Heavy Inter user name.
-6. Wide-tracked `organiser_ID` or role identifier.
-7. Three telemetry cards: `Trust`, `Gigs`, `Reliability`.
-8. `SYSTEM PREFERENCES` panel with `SIGNAL ENCRYPTION` and `AES-256`.
+6. Wide-tracked role identifier.
+7. Role-appropriate summaries: trust/gigs/reliability for marketplace operators, area/sounds/discovery for audiences.
+8. `ACCOUNT BOUNDARY` panel with the real immutable profile role and signed-in access explanation.
 9. A separate, visible `DISCONNECT_SESSION` button.
 10. Floating navigation dock.
 
-The profile must keep its full vertical story at phone size. In particular, flex compression or sticky overlays must never hide `AES-256`, the black encryption bar, or the disconnect action. If content needs to scroll, the scroll area should preserve those elements in order and maintain a safe bottom inset.
+The profile must keep its full vertical story at phone size. In particular, flex compression or sticky overlays must never hide the account boundary or disconnect action. If content needs to scroll, the scroll area should preserve those elements in order and maintain a safe bottom inset.
 
 ## 7. Copy and glyph lexicon
 
@@ -143,12 +143,11 @@ Use the lexicon consistently. Each phrase needs a state or a deliberate product-
 | `PROFILE_NODE` | Profile screen identity. |
 | `Session_Active` | User is signed in. |
 | `NODE_ACTIVE` | Authenticated active workspace. |
-| `ADMIN_CONSOLE` / `Gig Control` | Organiser workspace identity. |
+| `ADMIN_CONSOLE` / `Gig Control` / `Venue Control` | Booking-owner workspace identity. |
 | `NEW ASSIGNMENT` | Artist feed/work queue heading. |
 | `Radar_Scan_Active` / `LIVE_FEED` | Visual feed/radar motif; do not imply real location telemetry. |
 | `Confirm signal` | Commit a new gig. |
-| `System Preferences` | Profile security/status panel heading. |
-| `Signal Encryption` / `AES-256` | Secure-node visual language; code-commented prop until measured. |
+| `Account boundary` | Profile role and authenticated-access explanation. |
 | `Disconnect_Session` | Actual logout action. |
 
 Avoid random substitutions such as “Launch,” “Execute,” “Sync,” or “Neural” unless they make the state clearer. EDGE copy should be terse, legible, and slightly operational, not parody sci-fi.
@@ -168,7 +167,7 @@ Motion is part of the product narrative. It should communicate boot, signal, pro
 | Apply overlay | Sliding loop, roughly `1s` | Application is being transmitted/processed. |
 | Modal sheet | Enters from y `100%`, spring damping `30`, stiffness `300` | A control surface rising from the device edge. |
 | Profile transitions | AnimatePresence wait mode, small x offset around `10px` plus fade | Console-like screen change without a hard cut. |
-| AES bar | Animates from width `0` to `82%` | Visual boot/progress accent only; not a measured encryption score. |
+| Account-boundary bar | Animates from width `0` to `100%` | Shows that role assignment is complete; not a security score. |
 | Haptics | Light tap for small controls, medium for commit/logout, success/error patterns | Tactile confirmation where supported; never the only feedback. |
 
 Respect reduced-motion preferences when adding new motion. Do not use looping movement on a critical state if it makes the state harder to read. Every important transition needs a settled state that can be read without watching the animation.
@@ -191,7 +190,7 @@ Respect reduced-motion preferences when adding new motion. Do not use looping mo
 - Do not convey state through color or motion alone; pair it with a label.
 - Keep focus styles visible and preserve keyboard access to the auth CTA, forms, modal controls, logout, and dock.
 - Check the device frame at a narrow phone viewport and a wide desktop viewport.
-- Do not allow sticky footers, fixed docks, or animated overlays to cover `AES-256`, disconnect, application decisions, or form submission errors.
+- Do not allow sticky footers, fixed docks, or animated overlays to cover the account boundary, disconnect, application decisions, or form submission errors.
 - Avoid horizontal overflow in the ticker and cards; clipping is acceptable for the ticker strip only when the loop remains readable.
 - For new motion, respect `prefers-reduced-motion` and keep a non-animated equivalent.
 
@@ -205,7 +204,7 @@ Visual props are a legitimate part of EDGE's atmosphere, but they must be named 
 4. Add a data source, definition, loading state, and error state before upgrading it to real telemetry.
 5. Update [EDGE_MEMORY.md](../EDGE_MEMORY.md) and the feature's tests/notes when the classification changes.
 
-Examples already present in the codebase include `MarketplacePulse`, device signal indicators, `LiveRadar`, ticker events, the profile reliability demo value, the `AES-256` panel, and the build/footer labels. The source comments beside those values are part of the guardrail.
+Examples already present in the codebase include `MarketplacePulse`, device signal indicators, `LiveRadar`, ticker events, and the build/footer labels. The source comments beside those values are part of the guardrail.
 
 ## 12. Visual QA checklist
 
@@ -215,7 +214,7 @@ Before approving a visual change, inspect the live app and confirm:
 - Auth begins with `Initialize Protocol` and preserves the branded loading sequence.
 - Status bar and ticker remain visible and do not crowd the primary content.
 - The active screen has one clear hierarchy and one obvious next action.
-- Profile shows the full avatar/name hierarchy, `NODE_ACTIVE`, telemetry cards, `AES-256`, disconnect, and dock.
+- Profile shows the full avatar/name hierarchy, `NODE_ACTIVE`, role-appropriate summaries, account boundary, disconnect, and dock.
 - Real data and presentation props are visually and semantically distinguishable.
 - Motion settles correctly, does not cause layout jumps, and has a reduced-motion path.
 - Auth failure, empty data, loading, and logout states still explain what happened.

@@ -9,7 +9,9 @@ The companion visual specification is [docs/EDGE_VISUAL_SYSTEM.md](docs/EDGE_VIS
 EDGE is a structured marketplace for live performance bookings.
 
 - Organisers publish a gig with a date, place, genre, budget, and brief.
-- Artists discover open opportunities and apply to the organiser who owns the gig.
+- Artists discover open opportunities and apply to the organiser or venue that owns the booking.
+- Venues can publish open dates and manage applications as booking owners without being collapsed into an organiser identity.
+- Audiences use a discovery-only account for live signals by location and genre; ticketing and public event publication are intentionally not claimed yet.
 - Organisers inspect applicants, use the available compatibility aid, and accept or reject applications.
 - Both sides need a clear session, a trustworthy record of ownership, and a fast path back to the work that matters.
 
@@ -100,7 +102,7 @@ In particular, do not remove the following without an equivalent replacement:
 - the scrolling ticker;
 - the device/status bar;
 - telemetry cards;
-- the `AES-256` system panel;
+- the account-boundary panel that explains role-scoped access;
 - the profile hierarchy and `NODE_ACTIVE` language;
 - the visible `DISCONNECT_SESSION` action;
 - the floating black navigation dock;
@@ -121,8 +123,9 @@ The distinction below is a design and engineering contract. Presentation-only va
 | Element | Current meaning | Source / classification | Change rule |
 |---|---|---|---|
 | Firebase user/session | Signed-in identity and persistence | Real auth state | Never fake it; preserve logout and redirect recovery. |
-| Role selection | First-time user chooses organiser or artist | Real profile write to `/users/{uid}` | Keep roles immutable after creation unless the data model and rules intentionally change. |
-| Artist gig feed | Open gigs from Firestore | Real live query | Keep organiser ownership and open-status filtering aligned with rules. |
+| Role selection | First-time user chooses artist, organiser, venue, or audience | Real profile write to `/users/{uid}` | Keep roles immutable after creation unless the data model and rules intentionally change. |
+| Artist gig feed | Open gigs from Firestore | Real live query | Keep booking ownership and open-status filtering aligned with rules. |
+| Audience discovery | Open and filled booking signals from Firestore | Real signed-in live query | Treat this as discovery, not ticketing. Public event details require an explicit publication model before anonymous reads are enabled. |
 | Applications | Artist applies; organiser accepts/rejects | Real Firestore state | Preserve actor-specific transitions and references. |
 | `Active Gigs` / `Registered Artists` | Current open opportunities and artist profiles | Real Firestore-derived counts | Preserve loading/error states and keep the definitions aligned with the underlying queries. |
 | Status-bar signal, frequency, battery | Device-console framing | Visual-only indicators; code comment required | Never imply device health or network quality. |
@@ -130,17 +133,12 @@ The distinction below is a design and engineering contract. Presentation-only va
 | Activity ticker | Recent marketplace activity | Real recent gig records, presented as ambient motion | Keep repetition and speed subtle; provide an honest empty state. |
 | `LiveRadar` | Visual scan motif with a real open-gig count | Mixed: scan is a prop; count is Firestore-derived | Never present it as a live map, safety signal, or proximity result. |
 | Reliability / trust | Completed, cancelled, no-show, and review outcomes | Real derived marketplace data | Keep the scoring definition in `src/lib/reliability.ts` and test changes. |
-| `AES-256` and 82% bar | Secure-node visual language | Presentation-only trust prop; code comment required | Do not claim that the client has proven encryption or security posture. |
+| Account boundary panel | Explains role-scoped access | Real profile-role state plus explanatory copy | Do not claim an encryption standard or security posture the client cannot prove. |
 | `BUILD_2026.4.20` / `SECURE_CLOUD` | Release and atmosphere labels | Product copy / prop | Update only with an intentional release decision; `SECURE_CLOUD` is not a security certification. |
 | `Disconnect_Session` | Logout | Real auth action | Keep visible and accessible after login. |
 | Haptics | Tactile feedback where browser supports it | Real best-effort device behavior | Always keep a visual interaction fallback. |
 
-When implementing a prop, use a nearby JSX comment in the same component. Example:
-
-```tsx
-{/* Visual trust prop: this is not measured telemetry or a security claim. */}
-<span>AES-256</span>
-```
+When implementing a prop, use a nearby JSX comment in the same component and keep its wording distinct from measured telemetry.
 
 ## 4. Feature intent register
 
@@ -156,7 +154,9 @@ These screens separate “the user started sign-in” from “the authenticated 
 
 ### Role selection
 
-A new user needs an explicit operating role because organiser and artist permissions, home screens, and actions differ. The name and role are persisted to the user profile. Do not silently infer a role from the first action.
+A new user needs an explicit operating role because artist, organiser, venue, and audience permissions, home screens, and actions differ. The name and role are persisted to the user profile. Do not silently infer a role from the first action.
+
+Organisers and venues share booking-owner actions today, while retaining distinct identities and copy. The stored `organiserId` field remains the booking-owner UID for compatibility until a deliberate schema migration renames it. Audience profiles are read-only discovery nodes and cannot post gigs or apply.
 
 ### Artist home
 
@@ -164,11 +164,15 @@ The artist home answers: what is open, what might fit me, and how do I apply? Ke
 
 ### Post gig
 
-The organiser form converts an idea into a structured opportunity. Required fields are not arbitrary: they give the artist enough signal to decide whether to apply. The “Confirm signal” action is the commit point and should keep its loading/error feedback.
+The organiser/venue form converts an idea or open date into a structured opportunity. Required fields are not arbitrary: they give the artist enough signal to decide whether to apply. The “Confirm signal” action is the commit point and should keep its loading/error feedback.
 
-### Organiser dashboard
+### Booking-owner dashboard
 
-The organiser dashboard answers: what have I posted, who responded, and what decision is pending? The selected-gig sheet and live application query keep the relationship between gig and applicants visible. If hiring should fill or close a gig, implement that as an explicit lifecycle transition with rules and tests; do not imply it by changing a label only.
+The organiser or venue dashboard answers: what have I posted, who responded, and what decision is pending? The selected-gig sheet and live application query keep the relationship between gig and applicants visible. If hiring should fill or close a gig, implement that as an explicit lifecycle transition with rules and tests; do not imply it by changing a label only.
+
+### Audience discovery
+
+The audience home answers: what live signals are near places and genres I care about? It may show open bookings and confirmed lineups, but it must not imply that a booking brief is already a public ticketed event. Ticket links, published event details, follows, and alerts need explicit data fields and privacy rules before implementation.
 
 ### Applicant card and AI analysis
 
@@ -269,8 +273,8 @@ Before calling a change complete:
 - Open the GitHub Pages address and verify that its app shell forwards to `https://edge-gig-marketplace.web.app/` before sign-in starts.
 - In an unsupported embedded browser, verify the user gets a clear instruction to open the canonical address in Chrome, Edge, Firefox, or Safari instead of an endless loading state.
 - Verify a new user can choose a role and reach the correct home.
-- Verify the artist feed, gig form, organiser dashboard, and applicant decision states that the change touches.
-- Open the profile and check the top logout icon, `NODE_ACTIVE`, telemetry cards, `AES-256` panel, `DISCONNECT_SESSION`, and floating dock.
+- Verify the artist feed, audience discovery, gig form, booking-owner dashboard, and applicant decision states that the change touches.
+- Open each role profile and check the top logout icon, `NODE_ACTIVE`, role-appropriate summary, account boundary, `DISCONNECT_SESSION`, and floating dock.
 - Use logout, then verify the auth entry returns cleanly without stale authenticated content.
 - Resize or inspect the phone frame so no critical content is behind a sticky overlay or clipped by overflow.
 

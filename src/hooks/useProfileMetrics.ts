@@ -30,12 +30,14 @@ export function useProfileMetrics(profile: UserProfile) {
   }, [profile.uid]);
 
   return useMemo(() => {
-    const relevantGigs = profile.role === 'organiser'
+    const relevantGigs = profile.role === 'organiser' || profile.role === 'venue'
       ? gigs.filter((gig) => gig.organiserId === profile.uid)
-      : gigs.filter((gig) => applications.some((application) => (
+      : profile.role === 'artist'
+        ? gigs.filter((gig) => applications.some((application) => (
         application.gigId === gig.id &&
         (application.status === 'accepted' || application.status === 'cancelled')
-      )));
+        )))
+        : [];
     const reliability = calculateReliability(relevantGigs, profile.uid);
     const rating = averageRating(reviews.map((review) => review.score));
     return { ...reliability, rating, reviewCount: reviews.length };

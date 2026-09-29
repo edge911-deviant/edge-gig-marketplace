@@ -1,14 +1,17 @@
 import {
   ArrowRight,
   BriefcaseBusiness,
+  Building2,
   CalendarCheck,
   Check,
+  Compass,
   MapPin,
   Radio,
   Search,
   ShieldCheck,
   Sparkles,
   Star,
+  UsersRound,
   UserRoundSearch,
 } from 'lucide-react';
 import { motion } from 'motion/react';
@@ -26,7 +29,7 @@ const steps = [
   {
     number: '01',
     title: 'Publish a clear brief',
-    body: 'Organisers set the date, place, genre, budget and performance requirements up front.',
+    body: 'Organisers and venues set the date, place, genre, budget and performance requirements up front.',
     icon: BriefcaseBusiness,
   },
   {
@@ -44,7 +47,7 @@ const steps = [
   {
     number: '04',
     title: 'Close the trust loop',
-    body: 'Completion, cancellations and mutual reviews build a record that makes the next booking easier.',
+    body: 'Bookings become discoverable live signals for audiences, while completion and reviews build trust.',
     icon: CalendarCheck,
   },
 ];
@@ -111,7 +114,7 @@ export function PublicLandingPage({
               transition={{ delay: 0.14 }}
               className="hero-deck"
             >
-              EDGE brings artists and organisers into one precise workflow—from an open brief to a completed performance and a reputation both sides can trust.
+              EDGE connects artists, organisers, venues, and audiences in one live-performance network—from a clear booking brief to a show people can discover.
             </motion.p>
             <motion.div
               initial={{ opacity: 0, y: 18 }}
@@ -164,7 +167,7 @@ export function PublicLandingPage({
             <Radio size={18} />
             <span>Open opportunities</span>
           </div>
-          <p>Structured live-performance booking for artists, organisers and the people building better shows.</p>
+          <p>One network for the people who perform, produce, host, and show up.</p>
           <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/50">EDGE_01 / Network online</span>
         </section>
 
@@ -174,7 +177,7 @@ export function PublicLandingPage({
               <span className="section-kicker">Signal board</span>
               <h2 className="section-title">See the opportunity.<br />Know what it needs.</h2>
             </div>
-            <p className="section-intro">No vague social post, lost DM, or missing fee. EDGE keeps the useful details together so artists can decide quickly and organisers receive relevant applications.</p>
+            <p className="section-intro">No vague social post, lost DM, or missing fee. EDGE keeps the useful details together so artists can decide, booking owners can choose, and audiences can find what is emerging nearby.</p>
           </div>
           <div className="opportunity-grid">
             {previewGigs.map((gig, index) => (
@@ -203,7 +206,7 @@ export function PublicLandingPage({
               <span className="section-kicker">The protocol</span>
               <h2 className="section-title">From brief to encore,<br />without the guesswork.</h2>
             </div>
-            <p className="section-intro">The marketplace follows the real booking journey. Each step records what happened and leaves both sides with a clear next action.</p>
+            <p className="section-intro">The network follows the real journey from an available stage to a discoverable live event. Each profile gets a clear job without flattening every participant into the same workflow.</p>
           </div>
           <div className="steps-grid">
             {steps.map(({ number, title, body, icon: Icon }) => (
@@ -241,6 +244,32 @@ export function PublicLandingPage({
               </ul>
               <button type="button" onClick={primaryAction}>Post a clear brief <ArrowRight size={17} /></button>
             </div>
+            <div className="role-panel role-panel-accent">
+              <span className="section-kicker text-emerald-950/55">For venues</span>
+              <div className="role-panel-icon"><Building2 size={22} /></div>
+              <h2>Turn open dates into nights worth remembering.</h2>
+              <ul>
+                <li><Check size={16} />Publish programming needs for your space</li>
+                <li><Check size={16} />Compare applications in one booking view</li>
+                <li><Check size={16} />Build a visible record of hosted shows</li>
+              </ul>
+              <button type="button" onClick={primaryAction}>Program your venue <ArrowRight size={17} /></button>
+            </div>
+            <div className="role-panel">
+              <span className="section-kicker">For audiences</span>
+              <div className="role-panel-icon"><UsersRound size={22} /></div>
+              <h2>Find the artists and live moments around you.</h2>
+              <ul>
+                <li><Check size={16} />Explore live signals by place and genre</li>
+                <li><Check size={16} />Shape discovery with your preferences</li>
+                <li><Check size={16} />See public event details after host approval</li>
+              </ul>
+              <a href="#opportunities" className="role-link">Explore as a guest <Compass size={17} /></a>
+            </div>
+          </div>
+          <div className="guest-note">
+            <div><span className="h-2 w-2 rounded-full bg-emerald-500" /><strong>Guest view is live now</strong></div>
+            <p>Anyone can explore EDGE’s public story and preview opportunities. Real marketplace records stay signed-in until hosts can explicitly publish an event for public discovery.</p>
           </div>
         </section>
 
@@ -278,7 +307,7 @@ export function PublicLandingPage({
           <img src={EDGE_MARK_SRC} alt="" />
           <span className="section-kicker">EDGE network</span>
           <h2>Make the next booking<br />feel like progress.</h2>
-          <p>Join the prelaunch alpha and help shape a clearer live-performance marketplace.</p>
+          <p>Join the prelaunch alpha and help shape a clearer network for artists, organisers, venues, and audiences.</p>
           <button type="button" onClick={primaryAction} disabled={busy}>{primaryLabel}<ArrowRight size={18} /></button>
         </section>
       </main>

@@ -18,15 +18,17 @@ import {
 const PROJECT_ID = 'demo-edge';
 const ORGANISER_ID = 'organiser-1';
 const ARTIST_ID = 'artist-1';
+const VENUE_ID = 'venue-1';
+const AUDIENCE_ID = 'audience-1';
 const OUTSIDER_ID = 'outsider-1';
 const GIG_ID = 'gig-1';
 const APPLICATION_ID = `${GIG_ID}_${ARTIST_ID}`;
 
 let environment: RulesTestEnvironment;
 
-const profile = (uid: string, role: 'organiser' | 'artist') => ({
+const profile = (uid: string, role: 'organiser' | 'artist' | 'venue' | 'audience') => ({
   uid,
-  name: role === 'artist' ? 'Test Artist' : 'Test Organiser',
+  name: `Test ${role}`,
   role,
   bio: '',
   genres: [],
@@ -112,9 +114,53 @@ describe('profiles', () => {
     await assertSucceeds(updateDoc(doc(artistDb, 'users', ARTIST_ID), { bio: 'Live set specialist.' }));
     await assertFails(updateDoc(doc(artistDb, 'users', ARTIST_ID), { role: 'organiser' }));
   });
+
+  test('accepts venue and audience profiles while keeping roles immutable', async () => {
+    const venueDb = environment.authenticatedContext(VENUE_ID).firestore();
+    const audienceDb = environment.authenticatedContext(AUDIENCE_ID).firestore();
+    await assertSucceeds(setDoc(doc(venueDb, 'users', VENUE_ID), profile(VENUE_ID, 'venue')));
+    await assertSucceeds(setDoc(doc(audienceDb, 'users', AUDIENCE_ID), profile(AUDIENCE_ID, 'audience')));
+    await assertFails(updateDoc(doc(audienceDb, 'users', AUDIENCE_ID), { role: 'artist' }));
+  });
+
+  test('allows organisers and venues to post gigs, but blocks artist and audience profiles', async () => {
+    await environment.withSecurityRulesDisabled(async (context) => {
+      const firestore = context.firestore();
+      await Promise.all([
+        setDoc(doc(firestore, 'users', ORGANISER_ID), profile(ORGANISER_ID, 'organiser')),
+        setDoc(doc(firestore, 'users', ARTIST_ID), profile(ARTIST_ID, 'artist')),
+        setDoc(doc(firestore, 'users', VENUE_ID), profile(VENUE_ID, 'venue')),
+        setDoc(doc(firestore, 'users', AUDIENCE_ID), profile(AUDIENCE_ID, 'audience')),
+      ]);
+    });
+
+    const organiserDb = environment.authenticatedContext(ORGANISER_ID).firestore();
+    const venueDb = environment.authenticatedContext(VENUE_ID).firestore();
+    const artistDb = environment.authenticatedContext(ARTIST_ID).firestore();
+    const audienceDb = environment.authenticatedContext(AUDIENCE_ID).firestore();
+    await assertSucceeds(setDoc(doc(organiserDb, 'gigs', 'organiser-gig'), openGig()));
+    await assertSucceeds(setDoc(doc(venueDb, 'gigs', 'venue-gig'), { ...openGig(), organiserId: VENUE_ID }));
+    await assertFails(setDoc(doc(artistDb, 'gigs', 'artist-gig'), { ...openGig(), organiserId: ARTIST_ID }));
+    await assertFails(setDoc(doc(audienceDb, 'gigs', 'audience-gig'), { ...openGig(), organiserId: AUDIENCE_ID }));
+  });
 });
 
 describe('applications and acceptance', () => {
+  test('allows only artist profiles to apply', async () => {
+    await seedBase();
+    await environment.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), 'users', AUDIENCE_ID), profile(AUDIENCE_ID, 'audience'));
+    });
+    const audienceDb = environment.authenticatedContext(AUDIENCE_ID).firestore();
+    await assertFails(setDoc(doc(audienceDb, 'applications', `${GIG_ID}_${AUDIENCE_ID}`), {
+      gigId: GIG_ID,
+      artistId: AUDIENCE_ID,
+      organiserId: ORGANISER_ID,
+      status: 'pending',
+      appliedAt: '2026-08-11T01:00:00.000Z',
+    }));
+  });
+
   test('enforces deterministic, one-per-gig applications', async () => {
     await seedBase();
     await assertSucceeds(applyAsArtist());

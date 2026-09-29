@@ -3,14 +3,15 @@
 ## Enforced invariants
 
 1. A user document belongs to the authenticated UID; role, UID, trust counters, and creation time cannot be self-edited.
-2. Only an authenticated organiser can create a gig for their own UID, and every new gig starts `open`.
+2. Only an authenticated organiser or venue can create a gig for their own UID, and every new gig starts `open`. The legacy `organiserId` field represents that booking owner for both roles.
 3. Application IDs are deterministic: `{gigId}_{artistId}`. This makes one application per artist/gig a database invariant.
-4. An application must reference an existing, open gig and its real organiser.
+4. Only an artist profile can apply. An application must reference an existing, open gig and its real booking owner.
 5. Accepting an application and filling its gig are reciprocal writes in one transaction.
 6. A filled gig can become `completed`, or it can be cancelled together with its accepted application.
-7. Only the owning organiser can record completion, organiser cancellation, or an artist no-show. The accepted artist may cancel only their own booking.
+7. Only the owning organiser or venue can record completion, owner cancellation, or an artist no-show. The accepted artist may cancel only their own booking.
 8. Reviews are immutable, one per participant/gig, and only allowed between the organiser and accepted artist after completion.
-9. Browser clients send only `gigId` and `artistId` for AI analysis. The callable backend verifies ownership and reads protected data itself.
+9. Audience profiles are discovery-only: they may read signed-in marketplace signals but cannot create gigs or applications.
+10. Browser clients send only `gigId` and `artistId` for AI analysis. The callable backend verifies ownership and reads protected data itself.
 
 ## Deny cases covered by the emulator suite
 

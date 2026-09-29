@@ -62,7 +62,7 @@
   }
 
   .hero-grid {
-    @apply mx-auto grid min-h-[calc(100dvh-76px)] max-w-[1600px] items-stretch lg:grid-cols-[0.92fr_1.08fr];
+    @apply mx-auto grid max-w-[1600px] items-center lg:min-h-[calc(100dvh-76px)] lg:grid-cols-[minmax(0,0.78fr)_minmax(560px,1.22fr)];
   }
 
   .hero-copy {
@@ -74,11 +74,13 @@
   }
 
   .hero-title {
-    @apply max-w-[780px] text-[clamp(3.5rem,6.4vw,7.8rem)] font-black leading-[0.82] tracking-[-0.085em];
+    @apply max-w-[780px] text-[clamp(3.2rem,6vw,7.4rem)] font-black leading-[0.9] tracking-[-0.08em];
+    text-wrap: balance;
+    overflow-wrap: anywhere;
   }
 
   .hero-title span {
-    @apply font-serif italic font-black tracking-[-0.06em];
+    @apply mt-[0.08em] block font-serif italic font-black leading-[1.02] tracking-[-0.055em];
   }
 
   .hero-deck {
@@ -101,7 +103,8 @@
   .hero-principles svg { @apply text-emerald-600; }
 
   .hero-visual {
-    @apply relative min-h-[620px] overflow-hidden bg-black lg:m-4 lg:ml-0 lg:rounded-[3.5rem];
+    @apply relative min-h-[520px] overflow-hidden bg-black sm:min-h-[620px] lg:my-5 lg:mr-5 lg:min-h-0 lg:rounded-[3.5rem];
+    height: clamp(620px, 76vh, 820px);
   }
 
   .hero-visual > img {
@@ -149,6 +152,8 @@
 
   .section-title {
     @apply mt-4 text-4xl font-black leading-[0.93] tracking-[-0.06em] sm:text-6xl lg:text-7xl;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
   }
 
   .section-intro {
@@ -172,14 +177,22 @@
   .step-card h3 { @apply mt-16 text-2xl font-black tracking-[-0.04em]; }
   .step-card p { @apply mt-4 text-sm font-medium leading-6 text-slate-500; }
 
-  .role-grid { @apply grid overflow-hidden rounded-[3rem] border border-black/10 lg:grid-cols-2; }
-  .role-panel { @apply flex min-h-[560px] flex-col justify-between bg-white p-8 sm:p-12 lg:p-16; }
+  .role-grid { @apply grid overflow-hidden rounded-[3rem] border border-black/10 sm:grid-cols-2; }
+  .role-panel { @apply flex min-h-[500px] flex-col justify-between border-b border-black/10 bg-white p-8 sm:p-10 lg:p-12 xl:p-14; }
+  .role-panel:nth-child(odd) { @apply sm:border-r; }
   .role-panel-dark { @apply bg-black text-white; }
-  .role-panel h2 { @apply mt-6 text-4xl font-black leading-[0.95] tracking-[-0.06em] sm:text-5xl; }
+  .role-panel-accent { @apply bg-emerald-400 text-emerald-950; }
+  .role-panel-icon { @apply mt-6 flex h-12 w-12 items-center justify-center rounded-2xl border border-current/15; }
+  .role-panel h2 { @apply mt-6 text-4xl font-black leading-[1] tracking-[-0.055em] sm:text-5xl; text-wrap: balance; overflow-wrap: anywhere; }
   .role-panel ul { @apply my-10 space-y-4 text-sm font-semibold; }
   .role-panel li { @apply flex items-center gap-3; }
   .role-panel li svg { @apply shrink-0 text-emerald-500; }
+  .role-panel-accent li svg { @apply text-emerald-950; }
   .role-panel button { @apply flex w-fit items-center gap-3 rounded-full border border-current px-6 py-4 text-xs font-black transition hover:-translate-y-0.5; }
+  .role-link { @apply flex w-fit items-center gap-3 rounded-full border border-current px-6 py-4 text-xs font-black transition hover:-translate-y-0.5; }
+  .guest-note { @apply mt-5 grid gap-3 rounded-[2rem] border border-black/10 bg-white p-6 text-sm sm:grid-cols-[auto_1fr] sm:items-center sm:p-7; }
+  .guest-note > div { @apply flex items-center gap-3 whitespace-nowrap; }
+  .guest-note p { @apply font-medium leading-6 text-slate-500 sm:border-l sm:border-black/10 sm:pl-6; }
 
   .trust-section {
     @apply mx-auto grid max-w-[1600px] gap-10 bg-black px-6 py-24 text-white sm:px-10 lg:grid-cols-[1fr_0.8fr] lg:px-12 lg:py-32 xl:px-20;
@@ -217,6 +230,17 @@
 
   @media (max-width: 1023px) {
     .edge-app-shell { min-height: 100dvh; }
+    .hero-visual { height: auto; }
+  }
+
+  @media (max-width: 420px) {
+    .hero-title { font-size: clamp(3rem, 16vw, 4.1rem); line-height: 0.92; }
+    .hero-copy { @apply px-5 py-14; }
+    .hero-visual { @apply min-h-[500px]; }
+    .section-title { @apply text-[2.5rem] leading-[0.98]; }
+    .role-panel { @apply min-h-[470px] p-7; }
+    .role-panel h2 { @apply text-[2.45rem] leading-[1.02]; }
+    .final-cta h2 { @apply text-[2.7rem] leading-[0.96]; }
   }
 
   /* Primary EDGE mark: a compact tilted terminal that survives small sizes

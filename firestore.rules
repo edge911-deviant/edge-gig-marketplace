@@ -8,6 +8,13 @@ service cloud.firestore {
     function isValidId(id) {
       return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
     }
+    function hasRole(userId, role) {
+      return exists(/databases/$(database)/documents/users/$(userId)) &&
+             get(/databases/$(database)/documents/users/$(userId)).data.role == role;
+    }
+    function isBookingOwner(userId) {
+      return hasRole(userId, 'organiser') || hasRole(userId, 'venue');
+    }
 
     function isValidUser(data) {
       return data.keys().hasAll([
@@ -20,7 +27,7 @@ service cloud.firestore {
              ]) &&
              data.uid is string &&
              data.name is string && data.name.size() > 0 && data.name.size() <= 100 &&
-             data.role in ['organiser', 'artist'] &&
+             data.role in ['organiser', 'artist', 'venue', 'audience'] &&
              data.bio is string && data.bio.size() <= 2000 &&
              data.genres is list && data.genres.size() <= 20 &&
              data.location is string && data.location.size() <= 200 &&
@@ -116,6 +123,7 @@ service cloud.firestore {
                     ]) &&
                     incoming().organiserId == request.auth.uid &&
                     incoming().status == 'open' &&
+                    isBookingOwner(request.auth.uid) &&
                     isValidId(gigId);
 
       allow update: if isSignedIn() &&
@@ -124,7 +132,7 @@ service cloud.firestore {
                     incoming().createdAt == existing().createdAt &&
                     (
         // Organiser-owned changes.
-        (existing().organiserId == request.auth.uid && (
+        (existing().organiserId == request.auth.uid && isBookingOwner(request.auth.uid) && (
           (existing().status == 'open' && incoming().status == 'open' &&
            incoming().diff(existing()).affectedKeys().hasOnly([
              'title', 'description', 'budget', 'date', 'location', 'genre'
@@ -207,6 +215,7 @@ service cloud.firestore {
       allow create: if isSignedIn() &&
                     isValidApplication(incoming()) &&
                     incoming().artistId == request.auth.uid &&
+                    hasRole(request.auth.uid, 'artist') &&
                     incoming().status == 'pending' &&
                     applicationId == incoming().gigId + '_' + incoming().artistId &&
                     exists(/databases/$(database)/documents/gigs/$(incoming().gigId)) &&
@@ -221,7 +230,7 @@ service cloud.firestore {
                     incoming().appliedAt == existing().appliedAt &&
                     incoming().diff(existing()).affectedKeys().hasOnly(['status', 'status_updatedAt']) &&
                     (
-        (existing().organiserId == request.auth.uid &&
+        (existing().organiserId == request.auth.uid && isBookingOwner(request.auth.uid) &&
          existing().status == 'pending' &&
          (
            incoming().status == 'rejected' ||

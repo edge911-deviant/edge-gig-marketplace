@@ -2,12 +2,12 @@
   "entities": {
     "User": {
       "title": "User",
-      "description": "User profile for both organisers and artists",
+      "description": "Role-bound profile for artists, organisers, venues, and audiences",
       "type": "object",
       "properties": {
         "uid": { "type": "string" },
         "name": { "type": "string" },
-        "role": { "type": "string", "enum": ["organiser", "artist"] },
+        "role": { "type": "string", "enum": ["organiser", "artist", "venue", "audience"] },
         "bio": { "type": "string" },
         "genres": { "type": "array", "items": { "type": "string" } },
         "location": { "type": "string" },
@@ -20,7 +20,7 @@
     },
     "Gig": {
       "title": "Gig",
-      "description": "An event posting by an organiser",
+      "description": "A performance opportunity posted by an organiser or venue; organiserId remains the booking-owner field for backwards compatibility",
       "type": "object",
       "properties": {
         "id": { "type": "string" },

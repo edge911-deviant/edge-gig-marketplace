@@ -7,7 +7,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import {
   Plus, Search, Briefcase, User as UserIcon,
   MapPin, DollarSign, Calendar, Star,
-  X, History
+  X, History, Building2, UsersRound, Compass
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import {
@@ -214,11 +214,24 @@ const RoleSelection = () => {
   const { createProfile, user } = useAuth();
   const [name, setName] = useState(user?.displayName || '');
 
+  const roleOptions: Array<{
+    role: UserRole;
+    title: string;
+    description: string;
+    icon: typeof Briefcase;
+  }> = [
+    { role: 'artist', title: 'Artist', description: 'Find opportunities, apply, and build a trusted live record.', icon: UserIcon },
+    { role: 'organiser', title: 'Organiser', description: 'Publish briefs, review artists, and manage each booking.', icon: Briefcase },
+    { role: 'venue', title: 'Venue', description: 'Program your space, post open dates, and choose the right acts.', icon: Building2 },
+    { role: 'audience', title: 'Audience', description: 'Discover artists and live signals around the places you care about.', icon: UsersRound },
+  ];
+
   return (
-    <div className="mx-auto flex min-h-[calc(100dvh-120px)] w-full max-w-4xl flex-col justify-center space-y-8 p-6 sm:p-10">
-      <div className="space-y-2 text-center">
-        <h1 className="text-4xl font-bold tracking-tight">Welcome to EDGE</h1>
-        <p className="text-slate-500">The structured way to book gigs.</p>
+    <div className="mx-auto flex min-h-[calc(100dvh-120px)] w-full max-w-6xl flex-col justify-center space-y-8 p-6 sm:p-10 lg:py-16">
+      <div className="mx-auto max-w-3xl space-y-3 text-center">
+        <span className="font-mono text-[10px] font-bold uppercase tracking-[0.28em] text-emerald-600">Profile protocol · 4 paths</span>
+        <h1 className="text-4xl font-black leading-[0.95] tracking-[-0.055em] sm:text-6xl">Choose your place in the live network.</h1>
+        <p className="text-sm font-medium leading-6 text-slate-500 sm:text-base">EDGE connects the people who perform, produce, host, and show up. Pick the profile that matches what you want to do first.</p>
       </div>
 
       <div className="space-y-4">
@@ -232,29 +245,26 @@ const RoleSelection = () => {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
-        <button
-          onClick={() => createProfile('organiser', name)}
-          className="flex flex-col items-center justify-center p-6 space-y-2 border-2 border-slate-100 rounded-3xl hover:border-black transition-colors text-center"
-        >
-          <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center">
-            <Briefcase size={24} />
-          </div>
-          <span className="font-bold">Organiser</span>
-          <span className="text-xs text-slate-400">I post gigs & hire</span>
-        </button>
-
-        <button
-          onClick={() => createProfile('artist', name)}
-          className="flex flex-col items-center justify-center p-6 space-y-2 border-2 border-slate-100 rounded-3xl hover:border-black transition-colors text-center"
-        >
-          <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center">
-            <UserIcon size={24} />
-          </div>
-          <span className="font-bold">Artist</span>
-          <span className="text-xs text-slate-400">I find gigs & play</span>
-        </button>
+      <div className="grid gap-4 sm:grid-cols-2">
+        {roleOptions.map(({ role, title, description, icon: Icon }) => (
+          <button
+            key={role}
+            type="button"
+            disabled={!name.trim()}
+            onClick={() => createProfile(role, name.trim())}
+            className="group flex min-h-[190px] flex-col items-start justify-between rounded-[2.25rem] border-2 border-slate-100 bg-white p-6 text-left transition hover:-translate-y-1 hover:border-black hover:shadow-xl disabled:cursor-not-allowed disabled:opacity-40 sm:p-7"
+          >
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-slate-100 transition-colors group-hover:bg-black group-hover:text-white">
+              <Icon size={23} />
+            </div>
+            <div>
+              <span className="text-xl font-black tracking-[-0.04em]">{title}</span>
+              <span className="mt-2 block max-w-sm text-xs font-medium leading-5 text-slate-500">{description}</span>
+            </div>
+          </button>
+        ))}
       </div>
+      <p className="text-center font-mono text-[9px] uppercase tracking-[0.2em] text-slate-400">Your role controls the tools you see and cannot be changed after setup.</p>
     </div>
   );
 };
@@ -450,6 +460,117 @@ const ArtistHome = ({ telemetry }: { telemetry: MarketplaceTelemetry }) => {
         <div className="grid gap-5 md:grid-cols-2 2xl:grid-cols-3">
           {visibleGigs.map(gig => (
             <GigCard key={gig.id} gig={gig} onApply={handleApply} applying={applyingTo === gig.id} />
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const AudienceHome = ({ profile }: { profile: UserProfile }) => {
+  const [gigs, setGigs] = useState<Gig[]>([]);
+  const [searchQuery, setSearchQuery] = useState(profile.location || '');
+  const [selectedGenre, setSelectedGenre] = useState('All');
+  const [hasLoaded, setHasLoaded] = useState(false);
+  const [feedError, setFeedError] = useState('');
+
+  const visibleGigs = useMemo(
+    () => filterGigs(gigs, searchQuery, selectedGenre),
+    [gigs, searchQuery, selectedGenre],
+  );
+
+  useEffect(() => {
+    const discoveryQuery = query(collection(db, 'gigs'), where('status', 'in', ['open', 'filled']));
+    return onSnapshot(discoveryQuery, (snapshot) => {
+      setGigs(snapshot.docs
+        .map((item) => ({ id: item.id, ...item.data() } as Gig))
+        .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()));
+      setFeedError('');
+      setHasLoaded(true);
+    }, (error) => {
+      console.error('[AudienceHome] Snapshot error:', error);
+      setFeedError('EDGE could not load live signals. Check the connection and try again.');
+      setHasLoaded(true);
+    });
+  }, []);
+
+  return (
+    <div className="relative flex-1 overflow-y-auto bg-[#f8f7f4] pb-32 no-scrollbar lg:pb-12">
+      <div className="scanline" />
+      <header className="px-6 pb-4 pt-8 sm:px-10 lg:px-12 lg:pt-12 xl:px-16">
+        <div className="flex items-center justify-between">
+          <span className="lg:hidden"><EdgeMark size="sm" /></span>
+          <span className="font-mono text-[9px] font-black uppercase tracking-[0.22em] text-emerald-600">Discovery node · signed in</span>
+        </div>
+        <div className="mt-10 max-w-4xl lg:mt-4">
+          <span className="col-header opacity-100 text-black">AUDIENCE SIGNAL</span>
+          <h2 className="mt-3 text-5xl font-black leading-[0.9] tracking-[-0.065em] sm:text-6xl lg:text-7xl">Find what is<br />happening nearby.</h2>
+          <p className="mt-5 max-w-2xl text-sm font-medium leading-6 text-slate-500">Explore upcoming EDGE bookings by place and sound. Ticketing and public event details will appear only after a host publishes them.</p>
+        </div>
+      </header>
+
+      <div className="px-6 sm:px-10 lg:px-12 xl:px-16">
+        <div className="mt-6 grid gap-4 rounded-[2.5rem] bg-black p-5 text-white sm:p-7 lg:grid-cols-[1fr_auto] lg:items-center">
+          <div>
+            <p className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-white/45">Guest-to-member benefit</p>
+            <p className="mt-2 max-w-2xl text-xl font-black tracking-[-0.04em] sm:text-2xl">Your location and genre preferences shape this discovery feed.</p>
+          </div>
+          <div className="flex items-center gap-2 rounded-full border border-white/15 px-4 py-3 font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-white/60"><Compass size={15} className="text-emerald-400" />{profile.location || 'Add a location in profile'}</div>
+        </div>
+
+        <div className="mt-6 grid gap-3 lg:grid-cols-[1fr_auto]">
+          <div className="relative">
+            <Search size={16} className="absolute left-5 top-1/2 -translate-y-1/2 text-slate-400" aria-hidden="true" />
+            <input
+              type="search"
+              value={searchQuery}
+              onChange={(event) => setSearchQuery(event.target.value)}
+              aria-label="Search live signals"
+              placeholder="Search artist opportunity, place, or genre..."
+              className="w-full rounded-3xl border border-black/5 bg-white py-4 pl-12 pr-5 text-sm font-semibold outline-none transition focus:border-black focus:ring-2 focus:ring-black/5"
+            />
+          </div>
+          <div className="flex max-w-full gap-2 overflow-x-auto pb-1 no-scrollbar">
+            {GIG_GENRES.map((genre) => (
+              <button
+                key={genre}
+                type="button"
+                aria-pressed={selectedGenre === genre}
+                onClick={() => setSelectedGenre(genre)}
+                className={`whitespace-nowrap rounded-full px-5 py-3 text-[9px] font-black uppercase tracking-[0.14em] transition ${selectedGenre === genre ? 'bg-black text-white' : 'border border-black/5 bg-white text-slate-400 hover:border-black'}`}
+              >
+                {genre}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {feedError && <p role="alert" className="mt-5 rounded-2xl bg-red-50 px-5 py-4 text-xs font-semibold text-red-600">{feedError}</p>}
+
+        {!hasLoaded && <div className="mt-6 rounded-[3rem] border-2 border-dashed border-black/10 p-16 text-center font-mono text-[10px] uppercase tracking-widest text-slate-400">Scanning live signals...</div>}
+        {hasLoaded && !feedError && visibleGigs.length === 0 && (
+          <div className="mt-6 rounded-[3rem] border-2 border-dashed border-black/10 p-16 text-center">
+            <p className="text-xl font-black tracking-[-0.04em]">No matching live signals yet.</p>
+            <p className="mt-2 text-sm font-medium text-slate-500">Try another place or genre, or clear the search to see the network.</p>
+          </div>
+        )}
+
+        <div className="mt-6 grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
+          {visibleGigs.map((gig) => (
+            <article key={gig.id} className="flex min-h-[310px] flex-col justify-between rounded-[2.5rem] border border-black/5 bg-white p-7 shadow-[0_18px_50px_-40px_rgba(0,0,0,0.5)]">
+              <div className="flex items-start justify-between gap-4">
+                <span className={`rounded-full px-3 py-2 font-mono text-[8px] font-bold uppercase tracking-[0.16em] ${gig.status === 'filled' ? 'bg-emerald-50 text-emerald-700' : 'bg-amber-50 text-amber-700'}`}>{gig.status === 'filled' ? 'Lineup confirmed' : 'Artist booking open'}</span>
+                <span className="font-mono text-[9px] font-bold uppercase tracking-[0.16em] text-slate-400">{gig.genre}</span>
+              </div>
+              <div>
+                <h3 className="text-3xl font-black leading-[0.95] tracking-[-0.055em]">{gig.title}</h3>
+                <p className="mt-4 flex items-center gap-2 text-xs font-semibold text-slate-500"><MapPin size={13} />{gig.location}</p>
+              </div>
+              <div className="flex items-end justify-between border-t border-black/5 pt-5">
+                <div><span className="col-header block">Date</span><strong className="mt-1 block text-base font-black">{new Date(gig.date).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}</strong></div>
+                <span className="max-w-[150px] text-right text-[10px] font-semibold leading-4 text-slate-400">Public details follow host approval</span>
+              </div>
+            </article>
           ))}
         </div>
       </div>
@@ -655,8 +776,8 @@ const ApplicantCard = ({ app, gig, onStatusUpdate }: { app: Application, gig: Gi
   );
 };
 
-const OrganiserDashboard = ({ telemetry }: { telemetry: MarketplaceTelemetry }) => {
-  // Organisers see only their own gigs, then select one to subscribe to its
+const OrganiserDashboard = ({ telemetry, role }: { telemetry: MarketplaceTelemetry; role: 'organiser' | 'venue' }) => {
+  // Booking owners see only their own gigs, then select one to subscribe to its
   // applications. Both subscriptions update the screen when Firestore changes.
   const [gigs, setGigs] = useState<Gig[]>([]);
   const [selectedGig, setSelectedGig] = useState<Gig | null>(null);
@@ -751,8 +872,8 @@ const OrganiserDashboard = ({ telemetry }: { telemetry: MarketplaceTelemetry }) 
           </div>
         </div>
         <div className="mt-10 lg:mt-4">
-          <span className="col-header opacity-100 text-black">ADMIN CONSOLE</span>
-          <h2 className="mt-2 text-5xl font-black leading-[0.85] tracking-tighter lg:text-7xl">Gig Control</h2>
+          <span className="col-header opacity-100 text-black">{role === 'venue' ? 'VENUE NODE' : 'ADMIN CONSOLE'}</span>
+          <h2 className="mt-2 text-5xl font-black leading-[0.9] tracking-tighter lg:text-7xl">{role === 'venue' ? 'Venue Control' : 'Gig Control'}</h2>
         </div>
       </header>
 
@@ -764,7 +885,7 @@ const OrganiserDashboard = ({ telemetry }: { telemetry: MarketplaceTelemetry }) 
         {gigs.length === 0 && (
           <div className="p-12 border-2 border-dashed border-slate-100 rounded-[2.5rem] text-center space-y-2">
             <p className="font-mono text-[9px] text-slate-300 uppercase tracking-widest">No Active Missions</p>
-            <p className="text-xs text-slate-400 font-medium">Post your first gig to get started.</p>
+            <p className="text-xs text-slate-400 font-medium">{role === 'venue' ? 'Publish an open date to start programming your space.' : 'Post your first gig to get started.'}</p>
           </div>
         )}
         <div className="grid gap-4 md:grid-cols-2 2xl:grid-cols-3">
@@ -886,7 +1007,7 @@ const OrganiserDashboard = ({ telemetry }: { telemetry: MarketplaceTelemetry }) 
   );
 };
 
-const MainApp = () => {
+const MainApp = ({ previewRole }: { previewRole?: UserRole } = {}) => {
   // MainApp is the signed-in shell. activeTab controls the bottom navigation;
   // isPosting controls the organiser's full-screen post-gig sheet.
   const { profile } = useAuth();
@@ -895,6 +1016,16 @@ const MainApp = () => {
   const [isPosting, setIsPosting] = useState(false);
 
   if (!profile) return <RoleSelection />;
+
+  const activeProfile = previewRole ? { ...profile, role: previewRole } : profile;
+  const isBookingRole = activeProfile.role === 'organiser' || activeProfile.role === 'venue';
+  const homeLabel = activeProfile.role === 'artist'
+    ? 'Marketplace'
+    : activeProfile.role === 'audience'
+      ? 'Discover live'
+      : activeProfile.role === 'venue'
+        ? 'Venue control'
+        : 'Gig control';
 
   return (
     <div className="flex h-[100dvh] flex-col overflow-hidden bg-white">
@@ -915,9 +1046,9 @@ const MainApp = () => {
               onClick={() => setActiveTab('home')}
               className={`desktop-rail-button ${activeTab === 'home' ? 'desktop-rail-button-active' : ''}`}
             >
-              <Briefcase size={18} />{profile.role === 'artist' ? 'Marketplace' : 'Gig control'}
+              <Briefcase size={18} />{homeLabel}
             </button>
-            {profile.role === 'artist' && (
+            {activeProfile.role === 'artist' && (
               <button
                 type="button"
                 onClick={() => setActiveTab('applications')}
@@ -933,7 +1064,7 @@ const MainApp = () => {
             >
               <UserIcon size={18} />Profile node
             </button>
-            {profile.role === 'organiser' && (
+            {isBookingRole && (
               <button type="button" onClick={() => setIsPosting(true)} className="desktop-rail-button mt-4 border border-black/10 text-black">
                 <Plus size={18} />Post a gig
               </button>
@@ -944,8 +1075,8 @@ const MainApp = () => {
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
               <span className="font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-emerald-600">Node active</span>
             </div>
-            <p className="truncate text-sm font-black">{profile.name}</p>
-            <p className="mt-1 text-[10px] font-semibold capitalize text-slate-400">{profile.role} account</p>
+            <p className="truncate text-sm font-black">{activeProfile.name}</p>
+            <p className="mt-1 text-[10px] font-semibold capitalize text-slate-400">{activeProfile.role} account</p>
           </div>
         </aside>
 
@@ -957,9 +1088,11 @@ const MainApp = () => {
             exit={{ opacity: 0, x: -10 }}
             className="flex min-h-0 min-w-0 flex-1 flex-col overflow-hidden"
           >
-            {activeTab === 'home' && (profile.role === 'artist' ? <ArtistHome telemetry={telemetry} /> : <OrganiserDashboard telemetry={telemetry} />)}
-            {activeTab === 'applications' && profile.role === 'artist' && <ArtistApplications />}
-            {activeTab === 'profile' && <ProfileScreen profile={profile} />}
+            {activeTab === 'home' && activeProfile.role === 'artist' && <ArtistHome telemetry={telemetry} />}
+            {activeTab === 'home' && activeProfile.role === 'audience' && <AudienceHome profile={activeProfile} />}
+            {activeTab === 'home' && isBookingRole && <OrganiserDashboard telemetry={telemetry} role={activeProfile.role as 'organiser' | 'venue'} />}
+            {activeTab === 'applications' && activeProfile.role === 'artist' && <ArtistApplications />}
+            {activeTab === 'profile' && <ProfileScreen profile={activeProfile} />}
           </motion.main>
         </AnimatePresence>
       </div>
@@ -968,14 +1101,14 @@ const MainApp = () => {
         <div className="max-w-[320px] mx-auto bg-black/90 backdrop-blur-2xl px-2 py-2 rounded-[2.5rem] shadow-2xl shadow-black/40 border border-white/10 flex items-center justify-between pointer-events-auto">
           <button
             onClick={() => { Haptics.light(); setActiveTab('home'); }}
-            aria-label="Marketplace"
-            title="Marketplace"
+            aria-label={homeLabel}
+            title={homeLabel}
             className={`flex-1 py-4 flex justify-center transition-all ${activeTab === 'home' ? 'bg-white text-black rounded-[2rem] shadow-lg scale-105' : 'text-slate-500 hover:text-slate-300'}`}
           >
             <Briefcase size={22} strokeWidth={activeTab === 'home' ? 2.5 : 2} />
           </button>
 
-          {profile.role === 'organiser' && (
+          {isBookingRole && (
             <button
               onClick={() => { Haptics.medium(); setIsPosting(true); }}
               aria-label="Post a gig"
@@ -986,7 +1119,7 @@ const MainApp = () => {
             </button>
           )}
 
-          {profile.role === 'artist' && (
+          {activeProfile.role === 'artist' && (
             <button
               onClick={() => { Haptics.light(); setActiveTab('applications'); }}
               aria-label="My applications"
@@ -1039,7 +1172,8 @@ const AuthWrapper = () => {
   // AuthContext owns the complete redirect lifecycle so a delayed Firebase
   // callback cannot be mistaken for an ordinary signed-out page.
   const { user, phase, signIn, authError, clearAuthError } = useAuth();
-  const previewLanding = new URLSearchParams(window.location.search).get('preview') === 'landing';
+  const previewMode = new URLSearchParams(window.location.search).get('preview');
+  const previewLanding = previewMode === 'landing';
 
   const handleSignIn = () => {
     clearAuthError();
@@ -1103,6 +1237,9 @@ const AuthWrapper = () => {
       </div>
     );
   }
+
+  if (user && previewMode === 'roles') return <RoleSelection />;
+  if (user && previewMode === 'audience') return <MainApp previewRole="audience" />;
 
   if (!user || previewLanding) return (
     <PublicLandingPage

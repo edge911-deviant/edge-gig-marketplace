@@ -46,6 +46,15 @@ export function ProfileScreen({ profile }: { profile: UserProfile }) {
     portfolio: profile?.portfolio.join('\n') ?? '',
   }));
   const metrics = useProfileMetrics(profile);
+  const isAudience = profile.role === 'audience';
+  const genreLabel = isAudience ? 'Sounds you follow, separated by commas' : 'Genres, separated by commas';
+  const portfolioLabel = profile.role === 'venue'
+    ? 'Venue, stage, or technical links, one per line'
+    : profile.role === 'organiser'
+      ? 'Past event links, one per line'
+      : profile.role === 'audience'
+        ? 'Favourite artist or event links, one per line'
+        : 'Portfolio links, one per line';
 
   const handleSave = async (event: FormEvent) => {
     event.preventDefault();
@@ -92,8 +101,8 @@ export function ProfileScreen({ profile }: { profile: UserProfile }) {
           <input required value={form.name} onChange={(event) => setForm({ ...form, name: event.target.value })} placeholder="Name" className="w-full rounded-2xl bg-slate-50 p-4 text-sm font-bold outline-none focus:ring-2 focus:ring-black" />
           <textarea value={form.bio} onChange={(event) => setForm({ ...form, bio: event.target.value })} placeholder="Bio" rows={3} className="w-full rounded-2xl bg-slate-50 p-4 text-sm outline-none focus:ring-2 focus:ring-black" />
           <input value={form.location} onChange={(event) => setForm({ ...form, location: event.target.value })} placeholder="Location" className="w-full rounded-2xl bg-slate-50 p-4 text-sm outline-none focus:ring-2 focus:ring-black" />
-          <input value={form.genres} onChange={(event) => setForm({ ...form, genres: event.target.value })} placeholder="Genres, separated by commas" className="w-full rounded-2xl bg-slate-50 p-4 text-sm outline-none focus:ring-2 focus:ring-black" />
-          <textarea value={form.portfolio} onChange={(event) => setForm({ ...form, portfolio: event.target.value })} placeholder="Portfolio links, one per line" rows={3} className="w-full rounded-2xl bg-slate-50 p-4 text-sm outline-none focus:ring-2 focus:ring-black" />
+          <input value={form.genres} onChange={(event) => setForm({ ...form, genres: event.target.value })} placeholder={genreLabel} className="w-full rounded-2xl bg-slate-50 p-4 text-sm outline-none focus:ring-2 focus:ring-black" />
+          <textarea value={form.portfolio} onChange={(event) => setForm({ ...form, portfolio: event.target.value })} placeholder={portfolioLabel} rows={3} className="w-full rounded-2xl bg-slate-50 p-4 text-sm outline-none focus:ring-2 focus:ring-black" />
           {feedback && <p role="alert" className="text-xs font-semibold text-red-600">{feedback}</p>}
           <button disabled={saving} type="submit" className="w-full rounded-2xl bg-black p-4 text-[10px] font-black uppercase tracking-widest text-white disabled:opacity-40 lg:col-span-2">{saving ? 'Saving...' : 'Save profile'}</button>
         </form>
@@ -111,16 +120,25 @@ export function ProfileScreen({ profile }: { profile: UserProfile }) {
 
       <div className="grid w-full max-w-6xl shrink-0 gap-4 lg:grid-cols-[1.1fr_0.9fr]">
         <div className="space-y-4">
-        <div className="grid grid-cols-3 gap-2 bg-slate-50 p-2 rounded-[2.5rem]">
-          <div className="bg-white p-6 rounded-[2rem] text-center shadow-sm"><p className="text-3xl font-black tracking-tighter">{metrics.rating ?? '—'}</p><p className="col-header">Trust</p></div>
-          <div className="bg-white p-6 rounded-[2rem] text-center shadow-sm"><p className="text-3xl font-black tracking-tighter text-blue-600">{metrics.completed}</p><p className="col-header">Gigs</p></div>
-          <div className="bg-white p-6 rounded-[2rem] text-center shadow-sm"><p className="text-3xl font-black tracking-tighter text-emerald-500">{metrics.reliability === null ? '—' : `${metrics.reliability}%`}</p><p className="col-header">Reliability</p></div>
-        </div>
+        {isAudience ? (
+          <div className="grid grid-cols-3 gap-2 rounded-[2.5rem] bg-slate-50 p-2">
+            <div className="rounded-[2rem] bg-white p-5 text-center shadow-sm"><p className="truncate text-lg font-black tracking-tighter">{profile.location || 'Anywhere'}</p><p className="col-header">Area</p></div>
+            <div className="rounded-[2rem] bg-white p-5 text-center shadow-sm"><p className="text-3xl font-black tracking-tighter text-blue-600">{profile.genres.length}</p><p className="col-header">Sounds</p></div>
+            <div className="rounded-[2rem] bg-white p-5 text-center shadow-sm"><p className="text-lg font-black tracking-tighter text-emerald-500">Active</p><p className="col-header">Discovery</p></div>
+          </div>
+        ) : (
+          <div className="grid grid-cols-3 gap-2 rounded-[2.5rem] bg-slate-50 p-2">
+            <div className="rounded-[2rem] bg-white p-6 text-center shadow-sm"><p className="text-3xl font-black tracking-tighter">{metrics.rating ?? '—'}</p><p className="col-header">Trust</p></div>
+            <div className="rounded-[2rem] bg-white p-6 text-center shadow-sm"><p className="text-3xl font-black tracking-tighter text-blue-600">{metrics.completed}</p><p className="col-header">Gigs</p></div>
+            <div className="rounded-[2rem] bg-white p-6 text-center shadow-sm"><p className="text-3xl font-black tracking-tighter text-emerald-500">{metrics.reliability === null ? '—' : `${metrics.reliability}%`}</p><p className="col-header">Reliability</p></div>
+          </div>
+        )}
         <div className="shrink-0 p-8 border border-black/5 rounded-[2.5rem] space-y-4">
-          <span className="col-header opacity-100 text-black">System Preferences</span>
+          <span className="col-header opacity-100 text-black">Account boundary</span>
           <div className="space-y-4">
-            <div className="flex justify-between items-center text-xs"><span className="font-medium text-slate-500 uppercase tracking-widest">Signal Encryption</span><span className="font-mono font-bold">AES-256</span></div>
-            <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden"><motion.div initial={{ width: 0 }} animate={{ width: '82%' }} className="h-full bg-black" /></div>
+            <div className="flex justify-between items-center gap-4 text-xs"><span className="font-medium text-slate-500 uppercase tracking-widest">Role-bound tools</span><span className="font-mono font-bold capitalize">{profile.role}</span></div>
+            <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden"><motion.div initial={{ width: 0 }} animate={{ width: '100%' }} className="h-full bg-emerald-500" /></div>
+            <p className="text-[10px] font-medium leading-5 text-slate-400">Marketplace records stay behind authenticated access. Your profile role controls which actions are available.</p>
           </div>
         </div>
         </div>

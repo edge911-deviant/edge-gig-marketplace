@@ -1,7 +1,7 @@
 // These types describe the shape of the data stored in Firestore.
 // Change a type here when you add/remove a field, then update the matching
 // form, Firestore write, and security rule as well.
-export type UserRole = 'organiser' | 'artist';
+export type UserRole = 'organiser' | 'artist' | 'venue' | 'audience';
 
 // One document in the /users collection.
 export interface UserProfile {
