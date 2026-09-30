@@ -1,0 +1,77 @@
+/* Public-site interaction layer. Keep the rounded working app independent. */
+.public-site { --circuit: #d8ff3e; }
+.public-site [id] { scroll-margin-top: 100px; }
+.site-motion-control { display: flex; align-items: center; justify-content: center; gap: 7px; min-width: 44px; min-height: 44px; border: 1px solid #0a0a0a1c; padding: 0 12px; font: 700 8px var(--font-mono); text-transform: uppercase; letter-spacing: .12em; cursor: pointer; }
+.site-motion-control:hover { background: white; }
+.site-motion-control:disabled { cursor: default; opacity: .65; }
+.site-scroll-progress { position: fixed; left: 0; right: 0; top: 0; height: 3px; background: #10b981; transform-origin: left; z-index: 100; pointer-events: none; }
+.signal-cursor { position: fixed; top: 0; left: 0; z-index: 150; width: 28px; height: 28px; pointer-events: none; opacity: 0; color: var(--circuit); mix-blend-mode: difference; transition: opacity .15s; }
+.signal-cursor > svg { transform: translate(-50%, -50%); transition: scale .18s; }
+.signal-cursor > span { position: absolute; left: 17px; top: 11px; font: 700 6px var(--font-mono); letter-spacing: .16em; opacity: .8; }
+.signal-cursor[data-visible="true"] { opacity: .85; }
+.signal-cursor[data-interactive="true"] > svg { scale: 1.45; }
+.signal-cursor[data-interactive="true"] > span { display: none; }
+.hero-title > .glitch-word { display: block; margin-top: .08em; padding: 0; background: transparent; text-align: left; font: italic 900 1em/1.02 var(--font-serif); letter-spacing: -.055em; cursor: pointer; }
+.hero-title > .glitch-word.is-pulsing { animation: edge-word-signal .76s linear; }
+.stage-geometry { position: absolute; inset: 0; width: 100%; height: 100%; z-index: 1; pointer-events: none; }
+.hero-visual .hero-image-label { z-index: 3; bottom: 92px; }
+.hero-visual .hero-floating-card { z-index: 3; }
+.hero-scene-toolbar { position: absolute; bottom: 24px; left: 40px; right: 48px; z-index: 4; display: flex; justify-content: space-between; align-items: center; gap: 16px; padding-top: 14px; border-top: 1px solid #ffffff38; color: white; }
+.hero-scene-toolbar > span { font: 700 8px var(--font-mono); letter-spacing: .17em; color: #ffffff80; }
+.hero-scene-toolbar > button { display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 12px; background: #ffffff12; border: 1px solid #ffffff3d; font: 700 9px var(--font-mono); text-transform: uppercase; letter-spacing: .08em; cursor: pointer; }
+.hero-scene-toolbar > button:hover { background: var(--circuit); color: black; border-color: var(--circuit); }
+.hero-scene-toolbar > button:disabled { opacity: .45; cursor: default; }
+.topology-node { cursor: pointer; transition: background .2s, color .2s, transform .2s; min-height: 92px; }
+.topology-node:hover { transform: translateY(-3px); }
+.topology-node[aria-pressed="true"] { background: black; color: white; }
+.topology-node[aria-pressed="true"] small { color: var(--circuit); }
+.topology-node:focus-visible { outline-color: black; outline-offset: 5px; }
+.topology-role-detail { min-height: 300px; }
+.topology-role-code { display: block; font: 700 8px var(--font-mono); letter-spacing: .16em; opacity: .6; }
+.topology-role-detail h3 { margin-top: 20px; font-size: 32px; font-weight: 800; letter-spacing: -.06em; }
+.topology-role-detail p { min-height: 96px; margin-top: 12px; font-size: 13px; font-weight: 500; line-height: 1.8; color: #000a; }
+.topology-role-detail > a { display: flex; align-items: center; gap: 8px; min-height: 44px; font-size: 11px; font-weight: 800; margin: 14px 0 20px; }
+.topology-packet { position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; background: black; z-index: 3; pointer-events: none; }
+.topology-packet-artist { animation: edge-route-north .7s ease-out both; }
+.topology-packet-organiser { animation: edge-route-west .7s ease-out both; }
+.topology-packet-venue { animation: edge-route-east .7s ease-out both; }
+.topology-packet-audience { animation: edge-route-south .7s ease-out both; }
+.public-site [data-reveal="true"] { translate: 0 14px; transition: translate .35s ease-out; }
+.public-site [data-revealed="true"] { translate: 0 0; }
+.public-site[data-motion="paused"] *, .public-site[data-motion="paused"] *::before, .public-site[data-motion="paused"] *::after { animation: none !important; transition: none !important; }
+.public-site[data-motion="paused"] .topology-packet { display: none; }
+@keyframes edge-word-signal {
+  0%, 100% { text-shadow: none; transform: none; }
+  12%, 30% { text-shadow: 3px 0 #10b981, -3px 0 #2563eb; transform: skewX(-1deg); }
+  18%, 38% { text-shadow: -2px 0 #10b981, 2px 0 #2563eb; transform: translateX(1px); }
+  50%, 75% { text-shadow: 2px 0 #10b981, -2px 0 #2563eb; }
+}
+@keyframes edge-route-north { from { translate: -3px -3px; } to { translate: -3px -125px; opacity: 0; } }
+@keyframes edge-route-south { from { translate: -3px -3px; } to { translate: -3px 125px; opacity: 0; } }
+@keyframes edge-route-west { from { translate: -3px -3px; } to { translate: -160px -3px; opacity: 0; } }
+@keyframes edge-route-east { from { translate: -3px -3px; } to { translate: 160px -3px; opacity: 0; } }
+@media (max-width: 1023px) {
+  .topology-role-detail { min-height: 0; display: grid; grid-template-columns: 1fr 1fr; column-gap: 24px; }
+  .topology-role-code, .topology-role-detail h3, .topology-role-detail p, .topology-role-detail > a { grid-column: 1; }
+  .topology-role-detail p { min-height: 0; }
+  .topology-role-detail .topology-ledger { grid-column: 2; grid-row: 1 / 5; display: flex; flex-direction: column; border-left: 1px solid #0003; border-top: 0; border-bottom: 0; }
+  .topology-role-detail .topology-ledger span { justify-content: flex-start; border: 0; text-align: left; }
+}
+@media (max-width: 639px) {
+  .site-motion-control { padding: 0 10px; }
+  .site-motion-control > span { display: none; }
+  .hero-scene-toolbar { left: 24px; right: 24px; bottom: 18px; gap: 8px; }
+  .hero-scene-toolbar > span { font-size: 6px; }
+  .hero-visual .hero-image-label { left: 24px; right: 24px; bottom: 92px; }
+  .hero-visual .hero-image-label > span { font-size: 7px; }
+  .topology-role-detail { display: block; }
+  .topology-role-detail .topology-ledger { display: grid; grid-template-columns: 1fr; border: 0; border-top: 1px solid #0003; }
+  .topology-role-detail .topology-ledger span { padding-left: 0; }
+}
+@media (hover: none), (pointer: coarse) { .signal-cursor { display: none; } .glitch-word:hover { transform: none; text-shadow: none; } }
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .public-site *, .public-site *::before, .public-site *::after { animation: none !important; transition: none !important; }
+  .signal-cursor, .site-scroll-progress, .topology-packet { display: none; }
+  .glitch-word:hover { text-shadow: none; transform: none; }
+}

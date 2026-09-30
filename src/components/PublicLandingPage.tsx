@@ -14,10 +14,13 @@ import {
   UsersRound,
   UserRoundSearch,
 } from 'lucide-react';
-import { motion } from 'motion/react';
+import { MotionConfig, motion } from 'motion/react';
+import { GlitchWord, SignalCursor, SiteMotionControl, SiteScrollProgress, useSiteMotion } from './website/SiteMotion';
+import { StageVisual } from './website/StageVisual';
+import { RoleCircuit } from './website/RoleCircuit';
+import './website/website.css';
 
 const EDGE_MARK_SRC = `${import.meta.env.BASE_URL}edge-app-icon-transparent.png`;
-const HERO_IMAGE_SRC = `${import.meta.env.BASE_URL}edge-live-stage.png`;
 
 const previewGigs = [
   { date: '18 OCT', title: 'Indie night support act', place: 'Kolkata · The Black Box', genre: 'Indie', budget: '₹18,000' },
@@ -69,9 +72,13 @@ export function PublicLandingPage({
 }: PublicLandingPageProps) {
   const primaryAction = isSignedIn && onOpenWorkspace ? onOpenWorkspace : onSignIn;
   const primaryLabel = isSignedIn ? 'Open workspace' : 'Join EDGE';
+  const siteMotion = useSiteMotion();
 
   return (
-    <div className="public-site min-h-screen overflow-x-clip bg-[#f8f7f4] text-[#0a0a0a]">
+    <MotionConfig reducedMotion={siteMotion.enabled ? 'user' : 'always'}>
+    <div className="public-site min-h-screen overflow-x-clip bg-[#f8f7f4] text-[#0a0a0a]" data-motion={siteMotion.enabled ? 'active' : 'paused'}>
+      <SignalCursor enabled={siteMotion.enabled} />
+      <SiteScrollProgress enabled={siteMotion.enabled} />
       <header className="site-nav-wrap">
         <nav className="site-nav" aria-label="Main navigation">
           <a href="#top" className="flex items-center gap-3" aria-label="EDGE home">
@@ -86,9 +93,12 @@ export function PublicLandingPage({
             <a className="transition-colors hover:text-black" href="#how-it-works">How it works</a>
             <a className="transition-colors hover:text-black" href="#for-every-side">Who it is for</a>
           </div>
+          <div className="flex items-center gap-2 sm:gap-4">
+          <SiteMotionControl enabled={siteMotion.enabled} reducedMotion={siteMotion.reducedMotion} onToggle={siteMotion.toggle} />
           <button type="button" onClick={primaryAction} disabled={busy} className="site-nav-cta">
             {primaryLabel}<ArrowRight size={15} aria-hidden="true" />
           </button>
+          </div>
         </nav>
       </header>
 
@@ -96,23 +106,23 @@ export function PublicLandingPage({
         <section className="hero-grid">
           <div className="hero-copy">
             <motion.div
-              initial={{ opacity: 0, y: 10 }}
+              initial={siteMotion.enabled ? { opacity: 0, y: 10 } : false}
               animate={{ opacity: 1, y: 0 }}
               className="signal-pill"
             >
               <span className="h-2 w-2 rounded-full bg-emerald-500" />
-              Live performance network · Alpha
+              Live performance network · Pre-alpha
             </motion.div>
             <motion.h1
-              initial={{ opacity: 0, y: 18 }}
+              initial={siteMotion.enabled ? { opacity: 0, y: 18 } : false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.08 }}
               className="hero-title"
             >
-              Find the stage.<br />Book the right act.<br /><span className="glitch-word">Keep it clear.</span>
+              Find the stage.<br />Book the right act.<br /><GlitchWord enabled={siteMotion.enabled} />
             </motion.h1>
             <motion.p
-              initial={{ opacity: 0, y: 18 }}
+              initial={siteMotion.enabled ? { opacity: 0, y: 18 } : false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.14 }}
               className="hero-deck"
@@ -120,7 +130,7 @@ export function PublicLandingPage({
               EDGE connects artists, organisers, venues, and audiences in one live-performance network—from a clear booking brief to a show people can discover.
             </motion.p>
             <motion.div
-              initial={{ opacity: 0, y: 18 }}
+              initial={siteMotion.enabled ? { opacity: 0, y: 18 } : false}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.2 }}
               className="flex flex-col gap-3 sm:flex-row"
@@ -142,28 +152,7 @@ export function PublicLandingPage({
             </div>
           </div>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.985 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6 }}
-            className="hero-visual"
-          >
-            <img src={HERO_IMAGE_SRC} alt="An independent band performing to a crowd in an intimate venue" />
-            <div className="hero-frame-meta" aria-hidden="true"><span>FRAME_01</span><span>22°34′N</span><span>CAL//LIVE</span></div>
-            <div className="hero-image-shade" />
-            <div className="hero-image-label">
-              <span className="font-mono text-[9px] font-bold uppercase tracking-[0.26em] text-white/60">Signal_01 · Live</span>
-              <p>Where the next show becomes a real booking.</p>
-            </div>
-            <div className="hero-floating-card">
-              <div className="flex items-center justify-between">
-                <span className="font-mono text-[9px] font-bold uppercase tracking-[0.22em] text-slate-400">Open signal</span>
-                <span className="flex items-center gap-1 text-[9px] font-black uppercase tracking-widest text-emerald-600"><span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />Active</span>
-              </div>
-              <h2>Alt-rock support slot</h2>
-              <p><MapPin size={12} />Kolkata · 18 Oct · ₹18,000</p>
-            </div>
-          </motion.div>
+          <StageVisual enabled={siteMotion.enabled} />
         </section>
 
         <section className="signal-strip" aria-label="Product promise">
@@ -175,27 +164,7 @@ export function PublicLandingPage({
           <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/50">EDGE_01 / Network online</span>
         </section>
 
-        <section className="network-topology" aria-labelledby="network-topology-title">
-          <div className="topology-copy">
-            <span className="section-kicker">Network topology</span>
-            <h2 id="network-topology-title">Four roles.<br /><span>One live circuit.</span></h2>
-            <p>Each node gets a different job. The booking stays connected from open stage to discovered show.</p>
-          </div>
-          <div className="topology-map" role="img" aria-label="EDGE connects artists, organisers, venues, and audiences">
-            <div className="topology-axis topology-axis-horizontal" aria-hidden="true" />
-            <div className="topology-axis topology-axis-vertical" aria-hidden="true" />
-            <div className="topology-node topology-node-artist"><UserRoundSearch size={18} /><span>Artist</span><small>PERFORM</small></div>
-            <div className="topology-node topology-node-organiser"><BriefcaseBusiness size={18} /><span>Organiser</span><small>PRODUCE</small></div>
-            <div className="topology-core"><img src={EDGE_MARK_SRC} alt="" /><strong>EDGE</strong><small>ROUTING LIVE</small></div>
-            <div className="topology-node topology-node-venue"><Building2 size={18} /><span>Venue</span><small>HOST</small></div>
-            <div className="topology-node topology-node-audience"><UsersRound size={18} /><span>Audience</span><small>DISCOVER</small></div>
-          </div>
-          <div className="topology-ledger" aria-label="EDGE network state">
-            <span><i />04 role nodes</span>
-            <span><i />01 booking record</span>
-            <span><i />Clear state at every handoff</span>
-          </div>
-        </section>
+        <RoleCircuit />
 
         <section id="opportunities" className="site-section">
           <div className="section-heading-row">
@@ -250,7 +219,7 @@ export function PublicLandingPage({
 
         <section id="for-every-side" className="site-section">
           <div className="role-grid">
-            <div className="role-panel role-panel-dark">
+            <div className="role-panel role-panel-dark" id="role-artist">
               <div className="role-panel-heading"><span className="section-kicker text-white/50">For artists</span><span>A/01</span></div>
               <h2>More time performing.<br />Less time chasing replies.</h2>
               <ul>
@@ -260,7 +229,7 @@ export function PublicLandingPage({
               </ul>
               <button type="button" onClick={primaryAction}>Find your next gig <ArrowRight size={17} /></button>
             </div>
-            <div className="role-panel">
+            <div className="role-panel" id="role-organiser">
               <div className="role-panel-heading"><span className="section-kicker">For organisers</span><span>O/02</span></div>
               <h2>One control room for every live booking.</h2>
               <ul>
@@ -270,7 +239,7 @@ export function PublicLandingPage({
               </ul>
               <button type="button" onClick={primaryAction}>Post a clear brief <ArrowRight size={17} /></button>
             </div>
-            <div className="role-panel role-panel-accent">
+            <div className="role-panel role-panel-accent" id="role-venue">
               <div className="role-panel-heading"><span className="section-kicker text-emerald-950/55">For venues</span><span>V/03</span></div>
               <div className="role-panel-icon"><Building2 size={22} /></div>
               <h2>Turn open dates into nights worth remembering.</h2>
@@ -281,7 +250,7 @@ export function PublicLandingPage({
               </ul>
               <button type="button" onClick={primaryAction}>Program your venue <ArrowRight size={17} /></button>
             </div>
-            <div className="role-panel">
+            <div className="role-panel" id="role-audience">
               <div className="role-panel-heading"><span className="section-kicker">For audiences</span><span>U/04</span></div>
               <div className="role-panel-icon"><UsersRound size={22} /></div>
               <h2>Find the artists and live moments around you.</h2>
@@ -348,5 +317,6 @@ export function PublicLandingPage({
         </nav>
       </footer>
     </div>
+    </MotionConfig>
   );
 }
