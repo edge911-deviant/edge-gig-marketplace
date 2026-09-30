@@ -4,6 +4,8 @@ This is the visual source of truth for EDGE - Gig Marketplace. It describes the 
 
 Read this with [EDGE_MEMORY.md](../EDGE_MEMORY.md). Product intent and data truth win over visual imitation.
 
+Public website motion, discovery demos, support behavior and research are specified in [EDGE_WEBSITE_INTERACTIONS.md](EDGE_WEBSITE_INTERACTIONS.md).
+
 ## 1. Visual thesis
 
 EDGE should feel like a field terminal for live performance work:
@@ -170,6 +172,11 @@ Motion is part of the product narrative. It should communicate boot, signal, pro
 | Profile transitions | AnimatePresence wait mode, small x offset around `10px` plus fade | Console-like screen change without a hard cut. |
 | Profile-signal bar | Animates from width `0` to the calculated profile completeness | Real derived progress; never a security score. |
 | Haptics | Light tap for small controls, medium for commit/logout, success/error patterns | Tactile confirmation where supported; never the only feedback. |
+| Public headline | Brief signal split on entry, tap/click and keyboard focus | Discoverable touch feedback; preserve one accessible phrase. |
+| Public stage geometry | Two slow projected wireframe volumes and an explicit pulse control | Decorative stage/network metaphor; no telemetry claim. Pause offscreen and in hidden tabs. |
+| Public scroll reveal | Short, one-time positional movement; text stays visible | Section orientation without changing native scrolling or hiding essential copy. |
+| Public pointer | Small fine-pointer reticle alongside the native cursor | Optional tactile signal; absent on touch, text entry and reduced motion. |
+| Help companion | One brief entrance inside the opened help panel | A small branded welcome, not a persistent distraction. |
 
 Respect reduced-motion preferences when adding new motion. Do not use looping movement on a critical state if it makes the state harder to read. Every important transition needs a settled state that can be read without watching the animation.
 

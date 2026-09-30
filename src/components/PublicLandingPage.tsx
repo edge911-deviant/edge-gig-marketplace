@@ -84,15 +84,16 @@ export function PublicLandingPage({
               <span className="site-wordmark-meta">LIVE//BOOKING_OS</span>
             </span>
           </a>
-          <div className="hidden items-center gap-8 text-xs font-bold uppercase tracking-[0.16em] text-slate-500 md:flex">
+          <div className="hidden items-center gap-8 text-xs font-bold uppercase tracking-[0.16em] text-slate-500 xl:flex">
             <a className="transition-colors hover:text-black" href="#opportunities">Opportunities</a>
             <a className="transition-colors hover:text-black" href="#how-it-works">How it works</a>
             <a className="transition-colors hover:text-black" href="#for-every-side">Who it is for</a>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
+          <HelpNode />
           <SiteMotionControl enabled={siteMotion.enabled} reducedMotion={siteMotion.reducedMotion} onToggle={siteMotion.toggle} />
-          <button type="button" onClick={primaryAction} disabled={busy} className="site-nav-cta">
-            {primaryLabel}<ArrowRight size={15} aria-hidden="true" />
+          <button type="button" onClick={primaryAction} disabled={busy} className="site-nav-cta" aria-label={primaryLabel}>
+            <span className="sm:hidden">{isSignedIn ? 'Workspace' : primaryLabel}</span><span className="hidden sm:inline">{primaryLabel}</span><ArrowRight size={15} aria-hidden="true" />
           </button>
           </div>
         </nav>
@@ -157,7 +158,7 @@ export function PublicLandingPage({
             <span>Open opportunities</span>
           </div>
           <p>One network for the people who perform, produce, host, and show up.</p>
-          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/50">EDGE_01 / Network online</span>
+          <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/50">EDGE_01 / Pre-alpha preview</span>
         </section>
 
         <RoleCircuit />
@@ -280,7 +281,7 @@ export function PublicLandingPage({
           <img src={EDGE_MARK_SRC} alt="" />
           <span className="section-kicker">EDGE network</span>
           <h2>Make the next booking<br />feel like progress.</h2>
-          <p>Join the prelaunch alpha and help shape a clearer network for artists, organisers, venues, and audiences.</p>
+          <p>Join the pre-alpha and help shape a clearer network for artists, organisers, venues, and audiences.</p>
           <button type="button" onClick={primaryAction} disabled={busy}>{primaryLabel}<ArrowRight size={18} /></button>
         </section>
       </main>
@@ -294,7 +295,6 @@ export function PublicLandingPage({
           <a href={`${import.meta.env.BASE_URL}terms.html`}>Terms</a>
         </nav>
       </footer>
-      <HelpNode />
     </div>
     </MotionConfig>
   );

@@ -198,6 +198,8 @@ The public website uses a `signal-cut editorial` layer distinct from the rounded
 
 Avoid default AI-landing-page patterns: equal three-card feature grids, repeated pill badges, identical rounded panels, decorative metrics, vague capability copy, or adding sections only to fill space. Prefer asymmetric information density, specific booking data, a clear visual landmark per section, and honest states tied to the product model.
 
+The public interaction contract is documented in [docs/EDGE_WEBSITE_INTERACTIONS.md](docs/EDGE_WEBSITE_INTERACTIONS.md). Hover is an enhancement: important controls must also work by tap and keyboard. Keep the motion toggle and device reduced-motion behavior. The moving hero geometry is decorative; the public local-discovery board is explicitly fictional and separate from authenticated records. Simulated location must never silently become a real permission request. The help companion provides curated product answers and contact information, without claiming a live agent or AI chat.
+
 ### Floating navigation dock
 
 The black dock keeps the primary mode switch available without looking like a standard browser tab bar. The centre plus action supports organiser posting; the user action returns to the profile; the briefcase action returns to work. Keep the active state obvious and retain accessible labels.

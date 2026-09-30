@@ -4,7 +4,9 @@ import { motion, useReducedMotion, useScroll } from 'motion/react';
 
 export function useSiteMotion() {
   const reducedMotion = useReducedMotion();
-  const [paused, setPaused] = useState(() => window.sessionStorage.getItem('edge-site-motion') === 'paused');
+  const [paused, setPaused] = useState(() => {
+    try { return window.sessionStorage.getItem('edge-site-motion') === 'paused'; } catch { return false; }
+  });
   const enabled = !reducedMotion && !paused;
 
   useEffect(() => {
@@ -23,7 +25,7 @@ export function useSiteMotion() {
 
   const toggle = () => {
     setPaused((value) => {
-      window.sessionStorage.setItem('edge-site-motion', value ? 'active' : 'paused');
+      try { window.sessionStorage.setItem('edge-site-motion', value ? 'active' : 'paused'); } catch { /* Motion controls still work if browser storage is unavailable. */ }
       return !value;
     });
   };
