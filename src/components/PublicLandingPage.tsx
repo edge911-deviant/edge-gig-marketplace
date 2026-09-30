@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   ArrowRight,
   BriefcaseBusiness,
@@ -15,10 +16,12 @@ import {
 } from 'lucide-react';
 import { MotionConfig, motion } from 'motion/react';
 import { GlitchWord, SignalCursor, SiteMotionControl, SiteScrollProgress, useSiteMotion } from './website/SiteMotion';
-import { StageVisual } from './website/StageVisual';
+import { HeroConsole } from './website/HeroConsole';
 import { RoleCircuit } from './website/RoleCircuit';
 import { DiscoveryBoard } from './website/DiscoveryBoard';
 import { HelpNode } from './website/HelpNode';
+import { SiteRole } from './website/siteModel';
+import { useDemoScene } from './website/useDemoScene';
 import './website/website.css';
 
 const EDGE_MARK_SRC = `${import.meta.env.BASE_URL}edge-app-icon-transparent.png`;
@@ -69,6 +72,8 @@ export function PublicLandingPage({
   const primaryAction = isSignedIn && onOpenWorkspace ? onOpenWorkspace : onSignIn;
   const primaryLabel = isSignedIn ? 'Open workspace' : 'Join EDGE';
   const siteMotion = useSiteMotion();
+  const [selectedRole, setSelectedRole] = useState<SiteRole>('artist');
+  const scene = useDemoScene();
 
   return (
     <MotionConfig reducedMotion={siteMotion.enabled ? 'user' : 'always'}>
@@ -149,7 +154,7 @@ export function PublicLandingPage({
             </div>
           </div>
 
-          <StageVisual enabled={siteMotion.enabled} />
+          <HeroConsole enabled={siteMotion.enabled} role={selectedRole} onRoleChange={setSelectedRole} scene={scene} />
         </section>
 
         <section className="signal-strip" aria-label="Product promise">
@@ -161,7 +166,7 @@ export function PublicLandingPage({
           <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/50">EDGE_01 / Pre-alpha preview</span>
         </section>
 
-        <RoleCircuit />
+        <RoleCircuit selected={selectedRole} onSelect={setSelectedRole} />
 
         <section id="opportunities" className="site-section">
           <div className="section-heading-row">
@@ -171,7 +176,7 @@ export function PublicLandingPage({
             </div>
             <p className="section-intro">No vague social post, lost DM, or missing fee. EDGE keeps the useful details together so artists can decide, booking owners can choose, and audiences can find what is emerging nearby.</p>
           </div>
-          <DiscoveryBoard enabled={siteMotion.enabled} onJoin={primaryAction} joinLabel={primaryLabel} />
+          <DiscoveryBoard enabled={siteMotion.enabled} scene={scene} onJoin={primaryAction} joinLabel={primaryLabel} />
         </section>
 
         <section id="how-it-works" className="site-section border-y border-black/5 bg-white">

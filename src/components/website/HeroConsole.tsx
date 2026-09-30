@@ -1,0 +1,143 @@
+import { KeyboardEvent, useEffect, useRef, useState } from 'react';
+import { ArrowRight, Circle, MapPin, Pause, Play, Radio, RotateCcw } from 'lucide-react';
+import { motion, useInView, useMotionValue, useSpring } from 'motion/react';
+import { SiteRole, bookingJourney, demoCities, siteRoles } from './siteModel';
+import { DemoScene } from './useDemoScene';
+
+const HERO_IMAGE_SRC = `${import.meta.env.BASE_URL}edge-live-stage.png`;
+const modes = [
+  { id: 'roles', label: 'Your role', number: '01' },
+  { id: 'journey', label: 'Brief → show', number: '02' },
+  { id: 'nearby', label: 'Nearby', number: '03' },
+] as const;
+type HeroMode = (typeof modes)[number]['id'];
+
+export function HeroConsole({ enabled, role, onRoleChange, scene }: {
+  enabled: boolean; role: SiteRole; onRoleChange: (role: SiteRole) => void; scene: DemoScene;
+}) {
+  const [mode, setMode] = useState<HeroMode>('roles');
+  const [step, setStep] = useState(0);
+  const [playing, setPlaying] = useState(false);
+  const [eventId, setEventId] = useState('');
+  const [signal, setSignal] = useState(0);
+  const [pageVisible, setPageVisible] = useState(!document.hidden);
+  const module = useRef<HTMLDivElement>(null);
+  const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const inView = useInView(module, { amount: 0.15 });
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const imageX = useSpring(x, { stiffness: 100, damping: 30 });
+  const imageY = useSpring(y, { stiffness: 100, damping: 30 });
+  const selectedRole = siteRoles.find((item) => item.id === role)!;
+  const journey = bookingJourney[step];
+  const selectedEvent = scene.signals.find((item) => item.id === eventId) ?? scene.signals[0];
+
+  useEffect(() => {
+    const update = () => setPageVisible(!document.hidden);
+    document.addEventListener('visibilitychange', update);
+    return () => document.removeEventListener('visibilitychange', update);
+  }, []);
+  useEffect(() => {
+    if (!enabled || !inView || !pageVisible || mode !== 'journey') setPlaying(false);
+  }, [enabled, inView, pageVisible, mode]);
+  useEffect(() => {
+    if (!playing || !enabled || !inView || !pageVisible || mode !== 'journey') return;
+    const timer = setTimeout(() => {
+      if (step < bookingJourney.length - 1) setStep((value) => value + 1);
+      else setPlaying(false);
+    }, 2600);
+    return () => clearTimeout(timer);
+  }, [playing, enabled, inView, pageVisible, mode, step]);
+
+  const chooseMode = (value: HeroMode) => { setMode(value); setPlaying(false); setSignal((value) => value + 1); };
+  const moveTab = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
+    let next = index;
+    if (event.key === 'ArrowRight') next = (index + 1) % modes.length;
+    else if (event.key === 'ArrowLeft') next = (index + modes.length - 1) % modes.length;
+    else if (event.key === 'Home') next = 0;
+    else if (event.key === 'End') next = modes.length - 1;
+    else return;
+    event.preventDefault(); chooseMode(modes[next].id); tabRefs.current[next]?.focus();
+  };
+  const startJourney = () => {
+    if (playing) { setPlaying(false); return; }
+    setStep(0); setPlaying(true); setSignal((value) => value + 1);
+  };
+  const traceKey = `${mode}-${role}-${step}-${scene.city}-${scene.order}-${eventId}-${signal}`;
+  const showBoard = () => scene.setMode('shows');
+
+  return (
+    <div className="stage-module" ref={module} data-stage-mode={mode}>
+      <div className="stage-tabs" role="tablist" aria-label="Explore EDGE">
+        {modes.map((item, index) => <button type="button" role="tab" key={item.id} id={`stage-tab-${item.id}`} aria-selected={mode === item.id}
+          aria-controls={`stage-panel-${item.id}`} tabIndex={mode === item.id ? 0 : -1} ref={(element) => { tabRefs.current[index] = element; }}
+          onKeyDown={(event) => moveTab(event, index)} onClick={() => chooseMode(item.id)}><span aria-hidden="true">{item.number}</span>{item.label}</button>)}
+      </div>
+      {modes.filter((item) => item.id !== mode).map((item) => <div key={item.id} id={`stage-panel-${item.id}`} role="tabpanel" aria-labelledby={`stage-tab-${item.id}`} hidden />)}
+      <div id={`stage-panel-${mode}`} role="tabpanel" aria-labelledby={`stage-tab-${mode}`}>
+        <div className="hero-visual stage-frame" onPointerMove={(event) => {
+          if (!enabled || event.pointerType !== 'mouse' || !window.matchMedia('(pointer: fine)').matches) return;
+          const bounds = event.currentTarget.getBoundingClientRect();
+          x.set(((event.clientX - bounds.left) / bounds.width - 0.5) * 6);
+          y.set(((event.clientY - bounds.top) / bounds.height - 0.5) * 6);
+        }} onPointerLeave={() => { x.set(0); y.set(0); }}>
+          <motion.img src={HERO_IMAGE_SRC} alt="An independent band performing to a crowd in an intimate venue" style={{ x: enabled ? imageX : 0, y: enabled ? imageY : 0, scale: 1.018 }} />
+          <div className="stage-photo-shade" />
+          <motion.div key={traceKey} className={`stage-edge-trace stage-edge-trace-${mode} ${mode === 'roles' ? `stage-edge-${role}` : ''}`} aria-hidden="true"
+            initial={enabled ? { scaleY: 0, opacity: 0.2 } : false} animate={{ scaleY: 1, opacity: 1 }} transition={{ duration: enabled ? 0.55 : 0, ease: 'easeOut' }} />
+          {mode === 'roles' && <>
+            <p className="stage-instruction">Choose your place<br />in EDGE</p>
+            <div className="stage-role-controls" aria-label="Hero profile roles">
+              {siteRoles.map((item) => <button type="button" key={item.id} className={`stage-role-node stage-role-${item.id}`} aria-pressed={role === item.id}
+                aria-controls="stage-role-detail" onClick={() => { onRoleChange(item.id); setSignal((value) => value + 1); }}><Circle size={20} aria-hidden="true" /><span>{item.label}</span></button>)}
+            </div>
+            <div className="stage-photo-caption"><span>Four sides. One live-performance network.</span><p>The people make the connection.</p></div>
+          </>}
+          {mode === 'journey' && <div className="stage-rail stage-journey-rail">
+            <p className="stage-rail-kicker">Demo journey / tap a step</p>
+            <ol aria-label="Booking journey steps">
+              {bookingJourney.map((item, index) => <li key={item.label} data-complete={index < step}><button type="button" aria-pressed={step === index}
+                aria-controls="stage-journey-detail" onClick={() => { setStep(index); setPlaying(false); setSignal((value) => value + 1); }}><Circle size={18} aria-hidden="true" /><span><small>0{index + 1}</small>{item.label}</span></button></li>)}
+            </ol>
+            <button type="button" className="stage-play" onClick={startJourney} disabled={!enabled} aria-pressed={playing}>{playing ? <Pause size={14} aria-hidden="true" /> : step === 3 ? <RotateCcw size={14} aria-hidden="true" /> : <Play size={14} aria-hidden="true" />}{playing ? 'Pause journey' : step === 3 ? 'Replay journey' : 'Play journey'}</button>
+          </div>}
+          {mode === 'nearby' && <div className="stage-rail stage-event-rail">
+            <p className="stage-rail-kicker"><MapPin size={12} aria-hidden="true" />{scene.city} / fictional shows</p>
+            <div className="stage-timeline-heading"><strong>{scene.signals.length} demo {scene.signals.length === 1 ? 'show' : 'shows'}</strong><label className="sr-only" htmlFor="hero-date-order">Show date order</label><select id="hero-date-order" value={scene.order} onChange={(event) => scene.setOrder(event.target.value === 'latest' ? 'latest' : 'soonest')}><option value="soonest">Soonest first</option><option value="latest">Latest first</option></select></div>
+            <ol aria-label={`${scene.city} demo shows by date`}>
+              {scene.signals.slice(0, 3).map((item) => <li key={item.id}><button type="button" aria-pressed={selectedEvent?.id === item.id} aria-controls="stage-show-detail"
+                onClick={() => { setEventId(item.id); setSignal((value) => value + 1); }}><Circle size={16} aria-hidden="true" /><span><time dateTime={item.dateISO}>{item.date} 2026</time><strong>{item.show}</strong><small>{item.genre}</small></span></button></li>)}
+            </ol>
+            {!scene.signals.length && <p className="stage-empty">No sample shows match this filter.<button type="button" onClick={() => scene.setGenre('All sounds')}>Show all sounds</button></p>}
+            <a href="#opportunities" className="stage-timeline-end" onClick={showBoard}>{scene.signals.length > 3 ? 'Check out more' : 'End of sample · explore the board'}<ArrowRight size={13} aria-hidden="true" /></a>
+            {scene.genre !== 'All sounds' && <button type="button" className="stage-filter-reset" onClick={() => scene.setGenre('All sounds')}>Clear {scene.genre} filter</button>}
+          </div>}
+          <span className="stage-frame-code" aria-hidden="true">EDGE / {mode === 'roles' ? 'CONNECTED ROLES' : mode === 'journey' ? 'BOOKING PROTOCOL' : 'LOCAL DEMO'}</span>
+        </div>
+        <div className="stage-footer">
+          {mode === 'roles' && <div className="stage-detail" id="stage-role-detail" aria-live="polite" aria-atomic="true">
+            <motion.div key={role} initial={enabled ? { opacity: 0.4, y: 5 } : false} animate={{ opacity: 1, y: 0 }} transition={{ duration: enabled ? 0.22 : 0 }}><span className="stage-detail-code">{selectedRole.label} / {selectedRole.verb}</span><h2>{selectedRole.headline}</h2><p>{selectedRole.detail}</p></motion.div>
+            <a href={`#role-${role}`} className="stage-action">{selectedRole.action}<ArrowRight size={16} aria-hidden="true" /></a>
+          </div>}
+          {mode === 'journey' && <>
+            <div className="stage-detail" id="stage-journey-detail" aria-live="polite" aria-atomic="true">
+              <motion.div key={step} initial={enabled ? { opacity: 0.4, y: 5 } : false} animate={{ opacity: 1, y: 0 }} transition={{ duration: enabled ? 0.22 : 0 }}><span className="stage-detail-code">0{step + 1} / {journey.owner}</span><h2>{journey.title}</h2><p>{journey.detail}</p></motion.div>
+              {step === 0 ? <button type="button" className="stage-action" onClick={() => { if (scene.signals[0]) scene.openSignal(scene.signals[0], 'work'); }} disabled={!scene.signals.length}>{journey.action}<ArrowRight size={16} aria-hidden="true" /></button>
+                : <a href={step === 1 ? '#role-artist' : step === 2 ? '#how-it-works' : '#opportunities'} onClick={step === 3 ? showBoard : undefined} className="stage-action">{journey.action}<ArrowRight size={16} aria-hidden="true" /></a>}
+            </div>
+            <p className="stage-output"><Radio size={12} aria-hidden="true" />{journey.output}<span>Illustrated product journey, not a real booking.</span></p>
+          </>}
+          {mode === 'nearby' && <>
+            <form className="stage-place-form" onSubmit={scene.submitPlace} noValidate><div><label htmlFor="hero-place">PIN code or place</label><input id="hero-place" value={scene.query} onChange={(event) => scene.updateQuery(event.target.value)} placeholder="700001 or Kolkata" maxLength={64} autoComplete="postal-code" aria-invalid={Boolean(scene.error)} aria-describedby={`hero-place-hint${scene.error ? ' hero-place-error' : ''}`} /></div><button type="submit" className="stage-action">Find demo shows<ArrowRight size={16} aria-hidden="true" /></button></form>
+            <div className="stage-city-shortcuts" aria-label="Hero demo cities">{demoCities.map((city) => <button type="button" key={city} aria-pressed={scene.city === city} onClick={() => scene.selectCity(city)}>{city}</button>)}</div>
+            <p id="hero-place-hint" className="stage-place-hint">Demo PINs: 700001 · 400001 · 560001 · No GPS</p>
+            {scene.error && <p id="hero-place-error" className="stage-place-error" role="alert">{scene.error}</p>}
+            <div className="stage-show-detail" id="stage-show-detail" aria-live="polite" aria-atomic="true">{selectedEvent ? <><p><strong>{selectedEvent.show}</strong><span>{selectedEvent.venue} · {selectedEvent.time}</span></p><button type="button" onClick={() => scene.openSignal(selectedEvent, 'shows')}>View demo show<ArrowRight size={14} aria-hidden="true" /></button></> : <p>No sample show selected.</p>}</div>
+            <p className="sr-only" role="status">{scene.message}</p>
+          </>}
+        </div>
+      </div>
+      <p className="stage-module-note">Choose a role, follow a booking, or explore a demo scene.</p>
+    </div>
+  );
+}

@@ -12,7 +12,7 @@
     "preview": "vite preview",
     "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",
     "lint": "tsc --noEmit",
-    "test": "tsx --test src/lib/authFlow.test.ts src/lib/gigFilters.test.ts src/lib/reliability.test.ts scripts/hosting-artifact.test.mjs",
+    "test": "tsx --test src/lib/authFlow.test.ts src/lib/gigFilters.test.ts src/lib/reliability.test.ts src/components/website/siteModel.test.ts scripts/hosting-artifact.test.mjs",
     "test:rules:unit": "tsx --test tests/firestore.rules.test.ts",
     "test:rules": "firebase emulators:exec --only firestore --project demo-edge \"npm run test:rules:unit\"",
     "verify": "npm run lint && npm test && npm run build:firebase && npm run verify:hosting-artifact && npm run lint --prefix functions && npm run build --prefix functions"
