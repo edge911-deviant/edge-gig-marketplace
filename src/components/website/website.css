@@ -86,6 +86,36 @@
 .signal-dialog-brief { font-size: 14px; line-height: 1.8; margin: 24px 0; }
 .signal-dialog-note { font-size: 11px; line-height: 1.8; color: #626b75; }
 .signal-dialog-join { display: flex; justify-content: space-between; align-items: center; width: 100%; min-height: 52px; padding: 0 20px; background: black; color: white; font-size: 12px; font-weight: 800; margin-top: 24px; cursor: pointer; }
+.help-node-launcher { position: fixed; bottom: max(20px, env(safe-area-inset-bottom)); right: 24px; z-index: 90; display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 0 18px; background: #0a0a0a; color: white; border: 1px solid #ffffff4d; box-shadow: 0 8px 28px #0002; font: 700 9px var(--font-mono); letter-spacing: .14em; cursor: pointer; clip-path: polygon(10px 0, 100% 0, 100% calc(100% - 10px), calc(100% - 10px) 100%, 0 100%, 0 10px); }
+.help-node-launcher > i { height: 5px; width: 5px; background: var(--circuit); }
+.help-node-launcher:hover { border-color: var(--circuit); }
+.public-site:has(dialog[open]) .help-node-launcher { visibility: hidden; }
+.help-node-dialog { position: fixed; inset: auto 24px 82px auto; width: min(410px, calc(100% - 32px)); margin: 0; max-height: calc(100dvh - 130px); overflow-y: auto; padding: 0; background: #f8f7f4; color: #0a0a0a; border: 1px solid #0a0a0a; box-shadow: 0 20px 100px #0004; }
+.help-node-dialog::backdrop { background: #0005; }
+.help-node-content { padding: 24px; }
+.help-node-top { display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #0002; padding-bottom: 16px; }
+.help-node-top > span { display: flex; align-items: center; gap: 8px; font: 700 8px var(--font-mono); letter-spacing: .14em; }
+.help-node-top > button { width: 44px; height: 44px; display: flex; justify-content: center; align-items: center; border: 1px solid #0002; cursor: pointer; }
+.help-node-intro { display: grid; grid-template-columns: 1fr 120px; align-items: center; gap: 4px; padding-block: 24px; }
+.help-node-intro span { font: italic 900 10px var(--font-serif); color: #626b75; }
+.help-node-intro h2 { margin-top: 10px; font-size: 29px; font-weight: 800; letter-spacing: -.06em; line-height: 1.03; }
+.help-node-intro p { margin-top: 12px; font-size: 11px; color: #626b75; }
+.help-node-mascot { width: 120px; height: 120px; object-fit: contain; animation: edge-help-hello .8s ease-out both; }
+.help-node-mascot:hover { transform: rotate(3deg); transition: transform .3s; }
+.help-node-topics { display: grid; gap: 5px; }
+.help-node-topics button { display: flex; align-items: center; justify-content: space-between; min-height: 44px; gap: 14px; background: white; border: 1px solid #0002; padding: 10px 12px; text-align: left; font-size: 11px; font-weight: 700; cursor: pointer; }
+.help-node-topics button[aria-pressed="true"] { background: black; color: white; }
+.help-node-topics button[aria-pressed="true"] svg { color: var(--circuit); }
+.help-node-answer { margin-top: 20px; border-left: 2px solid #a1b52b; padding-left: 14px; }
+.help-node-answer h3 { font-size: 15px; font-weight: 800; letter-spacing: -.025em; }
+.help-node-answer p { margin-top: 10px; font-size: 12px; line-height: 1.8; color: #4e5660; }
+.help-node-answer > a { display: flex; align-items: center; gap: 8px; min-height: 44px; margin-top: 12px; font-size: 11px; font-weight: 800; }
+.help-node-answer dl { display: grid; gap: 10px; margin-top: 14px; }
+.help-node-answer dt { font-size: 11px; font-weight: 800; }
+.help-node-answer dd { font-size: 11px; color: #4e5660; margin-top: 3px; line-height: 1.7; }
+.help-node-footnote { margin-top: 18px; padding-top: 14px; border-top: 1px solid #0002; font: 400 8px/1.7 var(--font-mono); color: #626b75; }
+.public-site .site-footer { padding-bottom: 100px; }
+@keyframes edge-help-hello { from { transform: translateY(8px) rotate(-5deg); } to { transform: none; } }
 @keyframes edge-word-signal {
   0%, 100% { text-shadow: none; transform: none; }
   12%, 30% { text-shadow: 3px 0 #10b981, -3px 0 #2563eb; transform: skewX(-1deg); }
@@ -106,6 +136,11 @@
   .topology-role-detail .topology-ledger span { justify-content: flex-start; border: 0; text-align: left; }
 }
 @media (max-width: 639px) {
+  .help-node-launcher { right: 16px; padding: 0 12px; font-size: 8px; }
+  .help-node-dialog { inset: auto 16px 76px; max-height: calc(100dvh - 105px); }
+  .help-node-content { padding: 20px; }
+  .help-node-intro { grid-template-columns: 1fr 96px; }
+  .help-node-mascot { width: 96px; height: 96px; }
   .discovery-console { grid-template-columns: 1fr; gap: 22px; padding: 24px; }
   .discovery-console-title { grid-column: auto; }
   .discovery-modes { width: 100%; }

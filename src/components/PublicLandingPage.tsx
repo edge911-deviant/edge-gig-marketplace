@@ -18,6 +18,7 @@ import { GlitchWord, SignalCursor, SiteMotionControl, SiteScrollProgress, useSit
 import { StageVisual } from './website/StageVisual';
 import { RoleCircuit } from './website/RoleCircuit';
 import { DiscoveryBoard } from './website/DiscoveryBoard';
+import { HelpNode } from './website/HelpNode';
 import './website/website.css';
 
 const EDGE_MARK_SRC = `${import.meta.env.BASE_URL}edge-app-icon-transparent.png`;
@@ -293,6 +294,7 @@ export function PublicLandingPage({
           <a href={`${import.meta.env.BASE_URL}terms.html`}>Terms</a>
         </nav>
       </footer>
+      <HelpNode />
     </div>
     </MotionConfig>
   );
