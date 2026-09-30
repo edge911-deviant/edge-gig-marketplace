@@ -5,6 +5,12 @@ node_modules/
 build/
 dist/
 coverage/
+# Local design evidence and browser/test output; keep source regression tests tracked.
+artifacts/
+test-results/
+playwright-report/
+.playwright/
+.vscode/
 .DS_Store
 *.log
 .env*
