@@ -74,6 +74,7 @@ export function PublicLandingPage({
   const siteMotion = useSiteMotion();
   const [selectedRole, setSelectedRole] = useState<SiteRole>('artist');
   const scene = useDemoScene();
+  const [guideSlot, setGuideSlot] = useState<HTMLDivElement | null>(null);
 
   return (
     <MotionConfig reducedMotion={siteMotion.enabled ? 'user' : 'always'}>
@@ -95,7 +96,7 @@ export function PublicLandingPage({
             <a className="transition-colors hover:text-black" href="#for-every-side">Who it is for</a>
           </div>
           <div className="flex items-center gap-2 sm:gap-4">
-          <HelpNode />
+          <HelpNode enabled={siteMotion.enabled} guideSlot={guideSlot} />
           <SiteMotionControl enabled={siteMotion.enabled} reducedMotion={siteMotion.reducedMotion} onToggle={siteMotion.toggle} />
           <button type="button" onClick={primaryAction} disabled={busy} className="site-nav-cta" aria-label={primaryLabel}>
             <span className="sm:hidden">{isSignedIn ? 'Workspace' : primaryLabel}</span><span className="hidden sm:inline">{primaryLabel}</span><ArrowRight size={15} aria-hidden="true" />
@@ -154,7 +155,7 @@ export function PublicLandingPage({
             </div>
           </div>
 
-          <HeroConsole enabled={siteMotion.enabled} role={selectedRole} onRoleChange={setSelectedRole} scene={scene} />
+          <HeroConsole enabled={siteMotion.enabled} role={selectedRole} onRoleChange={setSelectedRole} scene={scene} onGuideMount={setGuideSlot} />
         </section>
 
         <section className="signal-strip" aria-label="Product promise">

@@ -12,8 +12,8 @@ const modes = [
 ] as const;
 type HeroMode = (typeof modes)[number]['id'];
 
-export function HeroConsole({ enabled, role, onRoleChange, scene }: {
-  enabled: boolean; role: SiteRole; onRoleChange: (role: SiteRole) => void; scene: DemoScene;
+export function HeroConsole({ enabled, role, onRoleChange, scene, onGuideMount }: {
+  enabled: boolean; role: SiteRole; onRoleChange: (role: SiteRole) => void; scene: DemoScene; onGuideMount: (slot: HTMLDivElement | null) => void;
 }) {
   const [mode, setMode] = useState<HeroMode>('roles');
   const [step, setStep] = useState(0);
@@ -114,7 +114,7 @@ export function HeroConsole({ enabled, role, onRoleChange, scene }: {
           </div>}
           <span className="stage-frame-code" aria-hidden="true">EDGE / {mode === 'roles' ? 'CONNECTED ROLES' : mode === 'journey' ? 'BOOKING PROTOCOL' : 'LOCAL DEMO'}</span>
         </div>
-        <div className="stage-footer">
+        <div className="stage-footer-row"><div className="stage-footer">
           {mode === 'roles' && <div className="stage-detail" id="stage-role-detail" aria-live="polite" aria-atomic="true">
             <motion.div key={role} initial={enabled ? { opacity: 0.4, y: 5 } : false} animate={{ opacity: 1, y: 0 }} transition={{ duration: enabled ? 0.22 : 0 }}><span className="stage-detail-code">{selectedRole.label} / {selectedRole.verb}</span><h2>{selectedRole.headline}</h2><p>{selectedRole.detail}</p></motion.div>
             <a href={`#role-${role}`} className="stage-action">{selectedRole.action}<ArrowRight size={16} aria-hidden="true" /></a>
@@ -135,7 +135,7 @@ export function HeroConsole({ enabled, role, onRoleChange, scene }: {
             <div className="stage-show-detail" id="stage-show-detail" aria-live="polite" aria-atomic="true">{selectedEvent ? <><p><strong>{selectedEvent.show}</strong><span>{selectedEvent.venue} · {selectedEvent.time}</span></p><button type="button" onClick={() => scene.openSignal(selectedEvent, 'shows')}>View demo show<ArrowRight size={14} aria-hidden="true" /></button></> : <p>No sample show selected.</p>}</div>
             <p className="sr-only" role="status">{scene.message}</p>
           </>}
-        </div>
+        </div><div id="hero-guide-slot" className="stage-guide-slot" ref={onGuideMount} /></div>
       </div>
       <p className="stage-module-note">Choose a role, follow a booking, or explore a demo scene.</p>
     </div>

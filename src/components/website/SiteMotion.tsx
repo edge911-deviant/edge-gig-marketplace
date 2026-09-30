@@ -55,27 +55,50 @@ export function SignalCursor({ enabled }: { enabled: boolean }) {
   const cursor = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (!enabled || !window.matchMedia('(hover: hover) and (pointer: fine)').matches) return;
-    const handleMove = (event: PointerEvent) => {
-      if (!cursor.current || event.pointerType !== 'mouse') return;
-      const target = event.target instanceof Element ? event.target : null;
-      const isTextEntry = target?.closest('input, textarea, select, dialog');
-      cursor.current.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
-      cursor.current.dataset.visible = isTextEntry ? 'false' : 'true';
-      cursor.current.dataset.interactive = target?.closest('button, a') ? 'true' : 'false';
+    const root = cursor.current?.closest<HTMLElement>('.public-site');
+    const finePointer = window.matchMedia('(hover: hover) and (pointer: fine)');
+    if (!root || !cursor.current) return;
+    let frame = 0;
+    const hide = () => {
+      cancelAnimationFrame(frame);
+      delete root.dataset.cursor;
+      if (cursor.current) cursor.current.dataset.visible = 'false';
     };
-    const hide = () => { if (cursor.current) cursor.current.dataset.visible = 'false'; };
+    const handleMove = (event: PointerEvent) => {
+      if (!cursor.current || event.pointerType !== 'mouse' || !finePointer.matches) { hide(); return; }
+      const target = event.target instanceof Element ? event.target : null;
+      if (!target?.closest('.public-site') || target.closest('input, textarea, select, dialog, [contenteditable="true"]')) { hide(); return; }
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        if (!cursor.current) return;
+        cursor.current.style.transform = `translate3d(${event.clientX}px, ${event.clientY}px, 0)`;
+        cursor.current.dataset.interactive = enabled && target.closest('button, a') ? 'true' : 'false';
+        cursor.current.dataset.surface = target.closest('.stage-frame, .role-panel-dark, .trust-section, .discovery-console, .signal-strip, .opportunity-card-featured') ? 'dark' : 'light';
+        cursor.current.dataset.visible = 'true';
+        // Hide the fallback only once the custom reticle is positioned and visible.
+        root.dataset.cursor = 'ready';
+      });
+    };
+    const focusChanged = (event: FocusEvent) => { if (event.target instanceof Element && event.target.closest('input, textarea, select, dialog, [contenteditable="true"]')) hide(); };
+    const visibilityChanged = () => { if (document.hidden) hide(); };
     document.addEventListener('pointermove', handleMove, { passive: true });
     document.addEventListener('pointerleave', hide);
+    document.addEventListener('focusin', focusChanged);
+    document.addEventListener('visibilitychange', visibilityChanged);
+    finePointer.addEventListener('change', hide);
     window.addEventListener('blur', hide);
     return () => {
+      hide();
       document.removeEventListener('pointermove', handleMove);
       document.removeEventListener('pointerleave', hide);
+      document.removeEventListener('focusin', focusChanged);
+      document.removeEventListener('visibilitychange', visibilityChanged);
+      finePointer.removeEventListener('change', hide);
       window.removeEventListener('blur', hide);
     };
   }, [enabled]);
 
-  return enabled ? <div ref={cursor} className="signal-cursor" aria-hidden="true" data-visible="false"><Crosshair size={28} strokeWidth={1} /><span>SIGNAL</span></div> : null;
+  return <div ref={cursor} className="signal-cursor" aria-hidden="true" data-visible="false"><Crosshair size={28} strokeWidth={1.25} /></div>;
 }
 
 export function GlitchWord({ enabled }: { enabled: boolean }) {
