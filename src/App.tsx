@@ -1007,12 +1007,12 @@ const OrganiserDashboard = ({ telemetry, role }: { telemetry: MarketplaceTelemet
   );
 };
 
-const MainApp = ({ previewRole }: { previewRole?: UserRole } = {}) => {
+const MainApp = ({ previewRole, initialTab = 'home' }: { previewRole?: UserRole; initialTab?: 'home' | 'applications' | 'profile' } = {}) => {
   // MainApp is the signed-in shell. activeTab controls the bottom navigation;
   // isPosting controls the organiser's full-screen post-gig sheet.
   const { profile } = useAuth();
   const telemetry = useMarketplaceTelemetry();
-  const [activeTab, setActiveTab] = useState<'home' | 'applications' | 'profile'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'applications' | 'profile'>(initialTab);
   const [isPosting, setIsPosting] = useState(false);
 
   if (!profile) return <RoleSelection />;
@@ -1240,6 +1240,7 @@ const AuthWrapper = () => {
 
   if (user && previewMode === 'roles') return <RoleSelection />;
   if (user && previewMode === 'audience') return <MainApp previewRole="audience" />;
+  if (user && previewMode === 'profile') return <MainApp initialTab="profile" />;
 
   if (!user || previewLanding) return (
     <PublicLandingPage

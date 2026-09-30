@@ -133,7 +133,7 @@ The distinction below is a design and engineering contract. Presentation-only va
 | Activity ticker | Recent marketplace activity | Real recent gig records, presented as ambient motion | Keep repetition and speed subtle; provide an honest empty state. |
 | `LiveRadar` | Visual scan motif with a real open-gig count | Mixed: scan is a prop; count is Firestore-derived | Never present it as a live map, safety signal, or proximity result. |
 | Reliability / trust | Completed, cancelled, no-show, and review outcomes | Real derived marketplace data | Keep the scoring definition in `src/lib/reliability.ts` and test changes. |
-| Account boundary panel | Explains role-scoped access | Real profile-role state plus explanatory copy | Do not claim an encryption standard or security posture the client cannot prove. |
+| `PROFILE_SIGNAL` panel | Profile completeness percentage and missing-field prompt | Real derived state from name, bio, location, genres/preferences, and role-relevant links | Keep the formula visible in `ProfileScreen`; never substitute a decorative score or security claim. |
 | `BUILD_2026.4.20` / `SECURE_CLOUD` | Release and atmosphere labels | Product copy / prop | Update only with an intentional release decision; `SECURE_CLOUD` is not a security certification. |
 | `Disconnect_Session` | Logout | Real auth action | Keep visible and accessible after login. |
 | Haptics | Tactile feedback where browser supports it | Real best-effort device behavior | Always keep a visual interaction fallback. |
@@ -187,10 +187,16 @@ The profile screen is the user's control and trust surface. Its hierarchy is int
 3. The bold avatar/name block identifies the active account.
 4. `NODE_ACTIVE` confirms the active workspace.
 5. Trust, gigs, and reliability cards summarize the account.
-6. System Preferences exposes the secure-node motif without pretending to be a security report.
+6. `PROFILE_SIGNAL` keeps the secure-node motif while measuring actual profile completeness and naming the next missing field.
 7. `DISCONNECT_SESSION` makes logout explicit and discoverable.
 
-Do not remove the profile panel's elements because they are “just visual.” The visual composition is the product's account-state explanation. Do correct any visual prop that could be mistaken for measured security or trust.
+Do not remove the profile panel's elements because they are “just visual.” The visual composition is the product's account-state explanation. Profile progress must always be calculated from stored profile fields; do not replace it with a random or fixed percentage.
+
+### Public website identity
+
+The public website uses a `signal-cut editorial` layer distinct from the rounded working app: warm graph paper, black terminal slabs, clipped/notched corners, acid-lime circuit moments, mono routing labels, and one meaningful network diagram. This distinction gives the website its own voice while preserving the EDGE mark, typography, operational language, and status colors.
+
+Avoid default AI-landing-page patterns: equal three-card feature grids, repeated pill badges, identical rounded panels, decorative metrics, vague capability copy, or adding sections only to fill space. Prefer asymmetric information density, specific booking data, a clear visual landmark per section, and honest states tied to the product model.
 
 ### Floating navigation dock
 

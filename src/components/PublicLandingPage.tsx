@@ -76,7 +76,10 @@ export function PublicLandingPage({
         <nav className="site-nav" aria-label="Main navigation">
           <a href="#top" className="flex items-center gap-3" aria-label="EDGE home">
             <img className="h-10 w-10 rounded-xl object-contain" src={EDGE_MARK_SRC} alt="" />
-            <span className="text-xl font-black tracking-[-0.08em]">EDGE</span>
+            <span>
+              <span className="block text-xl font-black leading-none tracking-[-0.08em]">EDGE</span>
+              <span className="site-wordmark-meta">LIVE//BOOKING_OS</span>
+            </span>
           </a>
           <div className="hidden items-center gap-8 text-xs font-bold uppercase tracking-[0.16em] text-slate-500 md:flex">
             <a className="transition-colors hover:text-black" href="#opportunities">Opportunities</a>
@@ -106,7 +109,7 @@ export function PublicLandingPage({
               transition={{ delay: 0.08 }}
               className="hero-title"
             >
-              Find the stage.<br />Book the right act.<br /><span>Keep it clear.</span>
+              Find the stage.<br />Book the right act.<br /><span className="glitch-word">Keep it clear.</span>
             </motion.h1>
             <motion.p
               initial={{ opacity: 0, y: 18 }}
@@ -146,6 +149,7 @@ export function PublicLandingPage({
             className="hero-visual"
           >
             <img src={HERO_IMAGE_SRC} alt="An independent band performing to a crowd in an intimate venue" />
+            <div className="hero-frame-meta" aria-hidden="true"><span>FRAME_01</span><span>22°34′N</span><span>CAL//LIVE</span></div>
             <div className="hero-image-shade" />
             <div className="hero-image-label">
               <span className="font-mono text-[9px] font-bold uppercase tracking-[0.26em] text-white/60">Signal_01 · Live</span>
@@ -171,6 +175,28 @@ export function PublicLandingPage({
           <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-white/50">EDGE_01 / Network online</span>
         </section>
 
+        <section className="network-topology" aria-labelledby="network-topology-title">
+          <div className="topology-copy">
+            <span className="section-kicker">Network topology</span>
+            <h2 id="network-topology-title">Four roles.<br /><span>One live circuit.</span></h2>
+            <p>Each node gets a different job. The booking stays connected from open stage to discovered show.</p>
+          </div>
+          <div className="topology-map" role="img" aria-label="EDGE connects artists, organisers, venues, and audiences">
+            <div className="topology-axis topology-axis-horizontal" aria-hidden="true" />
+            <div className="topology-axis topology-axis-vertical" aria-hidden="true" />
+            <div className="topology-node topology-node-artist"><UserRoundSearch size={18} /><span>Artist</span><small>PERFORM</small></div>
+            <div className="topology-node topology-node-organiser"><BriefcaseBusiness size={18} /><span>Organiser</span><small>PRODUCE</small></div>
+            <div className="topology-core"><img src={EDGE_MARK_SRC} alt="" /><strong>EDGE</strong><small>ROUTING LIVE</small></div>
+            <div className="topology-node topology-node-venue"><Building2 size={18} /><span>Venue</span><small>HOST</small></div>
+            <div className="topology-node topology-node-audience"><UsersRound size={18} /><span>Audience</span><small>DISCOVER</small></div>
+          </div>
+          <div className="topology-ledger" aria-label="EDGE network state">
+            <span><i />04 role nodes</span>
+            <span><i />01 booking record</span>
+            <span><i />Clear state at every handoff</span>
+          </div>
+        </section>
+
         <section id="opportunities" className="site-section">
           <div className="section-heading-row">
             <div>
@@ -183,7 +209,7 @@ export function PublicLandingPage({
             {previewGigs.map((gig, index) => (
               <article key={gig.title} className={`opportunity-card ${index === 0 ? 'opportunity-card-featured' : ''}`}>
                 <div className="flex items-start justify-between gap-4">
-                  <span className="opportunity-date">{gig.date}</span>
+                  <div><span className="opportunity-index">SIG/0{index + 1}</span><span className="opportunity-date">{gig.date}</span></div>
                   <span className="opportunity-genre">{gig.genre}</span>
                 </div>
                 <div>
@@ -212,7 +238,7 @@ export function PublicLandingPage({
             {steps.map(({ number, title, body, icon: Icon }) => (
               <article key={number} className="step-card">
                 <div className="flex items-center justify-between">
-                  <span className="font-mono text-xs font-black text-slate-300">{number}</span>
+                  <span className="step-number">{number}</span>
                   <span className="step-icon"><Icon size={20} /></span>
                 </div>
                 <h3>{title}</h3>
@@ -225,7 +251,7 @@ export function PublicLandingPage({
         <section id="for-every-side" className="site-section">
           <div className="role-grid">
             <div className="role-panel role-panel-dark">
-              <span className="section-kicker text-white/50">For artists</span>
+              <div className="role-panel-heading"><span className="section-kicker text-white/50">For artists</span><span>A/01</span></div>
               <h2>More time performing.<br />Less time chasing replies.</h2>
               <ul>
                 <li><Check size={16} />Search gigs by title, genre and place</li>
@@ -235,7 +261,7 @@ export function PublicLandingPage({
               <button type="button" onClick={primaryAction}>Find your next gig <ArrowRight size={17} /></button>
             </div>
             <div className="role-panel">
-              <span className="section-kicker">For organisers</span>
+              <div className="role-panel-heading"><span className="section-kicker">For organisers</span><span>O/02</span></div>
               <h2>One control room for every live booking.</h2>
               <ul>
                 <li><Check size={16} />Post a complete opportunity in minutes</li>
@@ -245,7 +271,7 @@ export function PublicLandingPage({
               <button type="button" onClick={primaryAction}>Post a clear brief <ArrowRight size={17} /></button>
             </div>
             <div className="role-panel role-panel-accent">
-              <span className="section-kicker text-emerald-950/55">For venues</span>
+              <div className="role-panel-heading"><span className="section-kicker text-emerald-950/55">For venues</span><span>V/03</span></div>
               <div className="role-panel-icon"><Building2 size={22} /></div>
               <h2>Turn open dates into nights worth remembering.</h2>
               <ul>
@@ -256,7 +282,7 @@ export function PublicLandingPage({
               <button type="button" onClick={primaryAction}>Program your venue <ArrowRight size={17} /></button>
             </div>
             <div className="role-panel">
-              <span className="section-kicker">For audiences</span>
+              <div className="role-panel-heading"><span className="section-kicker">For audiences</span><span>U/04</span></div>
               <div className="role-panel-icon"><UsersRound size={22} /></div>
               <h2>Find the artists and live moments around you.</h2>
               <ul>

@@ -33,6 +33,7 @@ Use the existing CSS tokens and Tailwind colors before inventing new values.
 | secondary text | Tailwind `slate-400` / `slate-500` | Supporting labels, metadata, and inactive state. |
 | structure text | Tailwind `slate-600` | The blue-grey body statement and secondary hierarchy. |
 | active emerald | Tailwind `emerald-500`, approximately `#10B981` | Online dots, node status, successful trust accent, battery fill. |
+| public circuit lime | `#D8FF3E` | One high-energy landmark on the public website: network topology and occasional venue emphasis. Never use as a full-app background or generic button color. |
 | signal blue | Tailwind `blue-600`, approximately `#2563EB` | Gigs or secondary telemetry accent; use sparingly. |
 | error red | Tailwind `red-500` / `red-600` | Auth failures, destructive logout language, invalid states only. |
 
@@ -44,7 +45,7 @@ The current font stack is part of the brand:
 
 - `Inter`, weights 300-800: body copy, headings, controls, names, and forms.
 - `JetBrains Mono`: telemetry values, device labels, timestamps, status codes, and ticker copy.
-- `Playfair Display`, italic 900: small editorial section labels such as `TRUST`, `RELIABILITY`, and `ACCOUNT BOUNDARY`.
+- `Playfair Display`, italic 900: editorial interruption, section labels, and the human phrase inside major headlines.
 
 The contrast between Inter's practical geometry, JetBrains Mono's machine readout, and Playfair's italic human/editorial note is intentional. Do not replace all three with one font “for consistency.” The contrast is the consistency.
 
@@ -65,11 +66,11 @@ The main stage is one responsive console system:
 - Narrow screens keep the single-column task flow and floating black dock.
 - Desktop uses the full browser width with a calm warm canvas, a persistent left rail, and multi-column content where that improves scanning.
 - The status strip and activity ticker remain shared anchors at every signed-in breakpoint.
-- Landing-page imagery may use large rounded editorial frames, while working screens stay primarily white and slate for legibility.
+- The public website uses clipped signal frames and notched panels; working screens keep their softer rounded hardware geometry for legibility and touch comfort.
 - The shell is a flex column with controlled overflow; content scrolling belongs inside the main workspace.
 - The floating dock and desktop rail must never cover critical content or duplicate competing actions.
 
-Internal cards use a family of large radii, from about `2rem` to `2.5rem`. Buttons use approximately `2rem` pill radii. Borders are pale and shadows are restrained. Rounded geometry is how the product gets its hardware-like feel; avoid mixing sharp rectangles into the core shell without a semantic reason.
+Internal app cards use a family of large radii, from about `2rem` to `2.5rem`. The public website deliberately contrasts that with `signal-cut` polygons: clipped top-right and bottom-left corners, thin technical borders, graph-paper alignment, and asymmetrical modules. Do not apply the cuts indiscriminately inside forms or dense working screens.
 
 ### Brand mark geometry
 
@@ -120,11 +121,11 @@ The profile is not a settings dump. It is a live account node:
 5. Heavy Inter user name.
 6. Wide-tracked role identifier.
 7. Role-appropriate summaries: trust/gigs/reliability for marketplace operators, area/sounds/discovery for audiences.
-8. `ACCOUNT BOUNDARY` panel with the real immutable profile role and signed-in access explanation.
+8. `PROFILE_SIGNAL` panel with a real field-completeness percentage, individual field indicators, and the next missing field.
 9. A separate, visible `DISCONNECT_SESSION` button.
 10. Floating navigation dock.
 
-The profile must keep its full vertical story at phone size. In particular, flex compression or sticky overlays must never hide the account boundary or disconnect action. If content needs to scroll, the scroll area should preserve those elements in order and maintain a safe bottom inset.
+The profile must keep its full vertical story at phone size. In particular, flex compression or sticky overlays must never make `PROFILE_SIGNAL` or disconnect unreachable. If content needs to scroll, the scroll area should preserve those elements in order and maintain a safe bottom inset.
 
 ## 7. Copy and glyph lexicon
 
@@ -147,7 +148,7 @@ Use the lexicon consistently. Each phrase needs a state or a deliberate product-
 | `NEW ASSIGNMENT` | Artist feed/work queue heading. |
 | `Radar_Scan_Active` / `LIVE_FEED` | Visual feed/radar motif; do not imply real location telemetry. |
 | `Confirm signal` | Commit a new gig. |
-| `Account boundary` | Profile role and authenticated-access explanation. |
+| `Profile_Signal` | Real profile completeness derived from stored fields. |
 | `Disconnect_Session` | Actual logout action. |
 
 Avoid random substitutions such as “Launch,” “Execute,” “Sync,” or “Neural” unless they make the state clearer. EDGE copy should be terse, legible, and slightly operational, not parody sci-fi.
@@ -167,7 +168,7 @@ Motion is part of the product narrative. It should communicate boot, signal, pro
 | Apply overlay | Sliding loop, roughly `1s` | Application is being transmitted/processed. |
 | Modal sheet | Enters from y `100%`, spring damping `30`, stiffness `300` | A control surface rising from the device edge. |
 | Profile transitions | AnimatePresence wait mode, small x offset around `10px` plus fade | Console-like screen change without a hard cut. |
-| Account-boundary bar | Animates from width `0` to `100%` | Shows that role assignment is complete; not a security score. |
+| Profile-signal bar | Animates from width `0` to the calculated profile completeness | Real derived progress; never a security score. |
 | Haptics | Light tap for small controls, medium for commit/logout, success/error patterns | Tactile confirmation where supported; never the only feedback. |
 
 Respect reduced-motion preferences when adding new motion. Do not use looping movement on a critical state if it makes the state harder to read. Every important transition needs a settled state that can be read without watching the animation.
@@ -190,7 +191,7 @@ Respect reduced-motion preferences when adding new motion. Do not use looping mo
 - Do not convey state through color or motion alone; pair it with a label.
 - Keep focus styles visible and preserve keyboard access to the auth CTA, forms, modal controls, logout, and dock.
 - Check the device frame at a narrow phone viewport and a wide desktop viewport.
-- Do not allow sticky footers, fixed docks, or animated overlays to cover the account boundary, disconnect, application decisions, or form submission errors.
+- Do not allow sticky footers, fixed docks, or animated overlays to make profile signal details, disconnect, application decisions, or form submission errors unreachable.
 - Avoid horizontal overflow in the ticker and cards; clipping is acceptable for the ticker strip only when the loop remains readable.
 - For new motion, respect `prefers-reduced-motion` and keep a non-animated equivalent.
 
@@ -214,7 +215,7 @@ Before approving a visual change, inspect the live app and confirm:
 - Auth begins with `Initialize Protocol` and preserves the branded loading sequence.
 - Status bar and ticker remain visible and do not crowd the primary content.
 - The active screen has one clear hierarchy and one obvious next action.
-- Profile shows the full avatar/name hierarchy, `NODE_ACTIVE`, role-appropriate summaries, account boundary, disconnect, and dock.
+- Profile shows the full avatar/name hierarchy, `NODE_ACTIVE`, role-appropriate summaries, truthful profile signal, disconnect, and dock.
 - Real data and presentation props are visually and semantically distinguishable.
 - Motion settles correctly, does not cause layout jumps, and has a reduced-motion path.
 - Auth failure, empty data, loading, and logout states still explain what happened.

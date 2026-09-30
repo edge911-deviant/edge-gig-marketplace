@@ -49,6 +49,13 @@
     @apply rounded-[2.25rem] bg-white p-6 shadow-[0_18px_50px_-36px_rgba(0,0,0,0.5)];
   }
 
+  .public-site {
+    background-image:
+      linear-gradient(rgba(10,10,10,0.025) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(10,10,10,0.02) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+
   .site-nav-wrap {
     @apply sticky top-0 z-[80] border-b border-black/5 bg-[#f8f7f4]/90 backdrop-blur-2xl;
   }
@@ -57,8 +64,11 @@
     @apply mx-auto flex h-[76px] max-w-[1440px] items-center justify-between px-5 sm:px-8 lg:px-12;
   }
 
+  .site-wordmark-meta { @apply mt-1 block font-mono text-[6px] font-bold uppercase tracking-[0.2em] text-slate-400; }
+
   .site-nav-cta {
-    @apply flex items-center gap-2 rounded-full bg-black px-5 py-3 text-[10px] font-black uppercase tracking-[0.16em] text-white transition hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-40;
+    @apply flex items-center gap-2 bg-black px-6 py-3 text-[10px] font-black uppercase tracking-[0.16em] text-white transition hover:-translate-y-0.5 hover:shadow-xl disabled:opacity-40;
+    clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
   }
 
   .hero-grid {
@@ -70,7 +80,8 @@
   }
 
   .signal-pill {
-    @apply mb-8 flex w-fit items-center gap-3 rounded-full border border-black/10 bg-white px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.22em] shadow-sm;
+    @apply mb-8 flex w-fit items-center gap-3 border border-black/15 bg-white px-4 py-2 font-mono text-[9px] font-bold uppercase tracking-[0.22em] shadow-sm;
+    clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px);
   }
 
   .hero-title {
@@ -82,6 +93,9 @@
   .hero-title span {
     @apply mt-[0.08em] block font-serif italic font-black leading-[1.02] tracking-[-0.055em];
   }
+
+  .glitch-word { @apply relative w-fit transition-[text-shadow,transform]; }
+  .glitch-word:hover { text-shadow: 3px 0 #10b981, -3px 0 #2563eb; transform: skewX(-1deg); }
 
   .hero-deck {
     @apply my-8 max-w-2xl text-base font-medium leading-7 text-slate-600 sm:text-lg sm:leading-8;
@@ -103,8 +117,9 @@
   .hero-principles svg { @apply text-emerald-600; }
 
   .hero-visual {
-    @apply relative min-h-[520px] overflow-hidden bg-black sm:min-h-[620px] lg:my-5 lg:mr-5 lg:min-h-0 lg:rounded-[3.5rem];
+    @apply relative min-h-[520px] overflow-hidden bg-black sm:min-h-[620px] lg:my-5 lg:mr-5 lg:min-h-0;
     height: clamp(620px, 76vh, 820px);
+    clip-path: polygon(0 0, calc(100% - 68px) 0, 100% 68px, 100% 100%, 44px 100%, 0 calc(100% - 44px));
   }
 
   .hero-visual > img {
@@ -115,6 +130,11 @@
     @apply absolute inset-0 bg-gradient-to-t from-black/85 via-black/10 to-black/20;
   }
 
+  .hero-frame-meta {
+    @apply absolute bottom-0 right-0 top-0 z-10 hidden w-8 flex-col items-center justify-between border-l border-white/15 py-24 font-mono text-[7px] font-bold uppercase tracking-[0.16em] text-white/45 sm:flex;
+  }
+  .hero-frame-meta span { writing-mode: vertical-rl; }
+
   .hero-image-label {
     @apply absolute bottom-8 left-7 max-w-xs text-white sm:bottom-10 sm:left-10;
   }
@@ -124,7 +144,8 @@
   }
 
   .hero-floating-card {
-    @apply absolute right-5 top-5 w-[min(310px,calc(100%-40px))] rounded-[2rem] bg-white/95 p-5 shadow-2xl backdrop-blur-xl sm:right-8 sm:top-8;
+    @apply absolute right-5 top-5 w-[min(310px,calc(100%-40px))] bg-white/95 p-5 shadow-2xl backdrop-blur-xl sm:right-12 sm:top-8;
+    clip-path: polygon(16px 0, 100% 0, 100% calc(100% - 16px), calc(100% - 16px) 100%, 0 100%, 0 16px);
   }
 
   .hero-floating-card h2 { @apply mt-5 text-xl font-black tracking-[-0.04em]; }
@@ -137,6 +158,32 @@
   .signal-strip div { @apply flex items-center gap-3 text-xs font-black uppercase tracking-[0.15em]; }
   .signal-strip div svg { @apply text-emerald-500; }
   .signal-strip > p { @apply text-sm font-medium text-white/60 lg:text-center; }
+
+  .network-topology {
+    @apply mx-auto grid max-w-[1600px] gap-8 border-b border-black/10 bg-[#d8ff3e] px-6 py-16 sm:px-10 lg:grid-cols-[0.72fr_1.25fr_0.58fr] lg:items-center lg:px-12 lg:py-20;
+  }
+  .topology-copy h2 { @apply mt-4 text-4xl font-black leading-[0.92] tracking-[-0.065em] sm:text-5xl; }
+  .topology-copy h2 span { @apply font-serif italic; }
+  .topology-copy p { @apply mt-5 max-w-md text-sm font-semibold leading-6 text-black/60; }
+  .topology-map { @apply relative grid min-h-[410px] grid-cols-3 grid-rows-3 items-center justify-items-center border border-black/25 bg-[#d8ff3e]; clip-path: polygon(0 0, calc(100% - 34px) 0, 100% 34px, 100% 100%, 34px 100%, 0 calc(100% - 34px)); }
+  .topology-map::before { content: ''; @apply absolute inset-3 border border-black/10; clip-path: inherit; }
+  .topology-axis { @apply absolute bg-black/25; }
+  .topology-axis-horizontal { @apply left-[16%] right-[16%] top-1/2 h-px; }
+  .topology-axis-vertical { @apply bottom-[16%] left-1/2 top-[16%] w-px; }
+  .topology-node { @apply relative z-10 flex min-w-[112px] flex-col items-center border border-black bg-[#d8ff3e] px-3 py-3 text-center; }
+  .topology-node span { @apply mt-2 text-xs font-black; }
+  .topology-node small { @apply mt-1 font-mono text-[7px] font-bold tracking-[0.18em] text-black/50; }
+  .topology-node-artist { @apply col-start-2 row-start-1; }
+  .topology-node-organiser { @apply col-start-1 row-start-2; }
+  .topology-node-venue { @apply col-start-3 row-start-2; }
+  .topology-node-audience { @apply col-start-2 row-start-3; }
+  .topology-core { @apply relative z-20 col-start-2 row-start-2 flex h-28 w-28 rotate-3 flex-col items-center justify-center bg-black text-white shadow-[10px_10px_0_rgba(0,0,0,0.16)]; }
+  .topology-core img { @apply h-10 w-10 object-contain; }
+  .topology-core strong { @apply mt-1 text-lg tracking-[-0.06em]; }
+  .topology-core small { @apply font-mono text-[6px] tracking-[0.2em] text-emerald-400; }
+  .topology-ledger { @apply grid divide-y divide-black/15 border-y border-black/20 font-mono text-[8px] font-bold uppercase tracking-[0.16em]; }
+  .topology-ledger span { @apply flex items-center gap-3 py-4; }
+  .topology-ledger i { @apply h-2 w-2 bg-black; }
 
   .site-section {
     @apply mx-auto w-full max-w-[1600px] px-6 py-24 sm:px-10 lg:px-12 lg:py-32;
@@ -160,29 +207,41 @@
     @apply max-w-xl text-base font-medium leading-7 text-slate-500 lg:justify-self-end lg:text-lg lg:leading-8;
   }
 
-  .opportunity-grid { @apply grid gap-4 md:grid-cols-3; }
+  .opportunity-grid { @apply grid gap-4 md:grid-cols-[1.15fr_0.85fr]; }
   .opportunity-card {
-    @apply flex min-h-[340px] flex-col justify-between rounded-[2.5rem] border border-black/5 bg-white p-7 transition duration-300 hover:-translate-y-1 hover:border-black hover:shadow-2xl;
+    @apply flex min-h-[260px] flex-col justify-between border border-black/15 bg-white p-7 transition duration-300 hover:-translate-y-1 hover:border-black hover:shadow-2xl;
+    clip-path: polygon(0 0, calc(100% - 24px) 0, 100% 24px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
   }
-  .opportunity-card-featured { @apply bg-black text-white; }
-  .opportunity-date { @apply whitespace-pre-line font-mono text-sm font-black leading-tight tracking-[-0.04em]; }
-  .opportunity-genre { @apply rounded-full bg-current/5 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.16em]; }
-  .opportunity-card h3 { @apply max-w-[260px] text-3xl font-black leading-[0.95] tracking-[-0.05em]; }
+  .opportunity-card-featured { @apply min-h-[536px] bg-black text-white md:row-span-2; }
+  .opportunity-index { @apply mb-3 block font-mono text-[8px] font-bold uppercase tracking-[0.2em] text-emerald-500; }
+  .opportunity-date { @apply block whitespace-pre-line font-mono text-sm font-black leading-tight tracking-[-0.04em]; }
+  .opportunity-genre { @apply border border-current/15 px-3 py-1.5 text-[9px] font-black uppercase tracking-[0.16em]; }
+  .opportunity-card h3 { @apply max-w-[360px] text-3xl font-black leading-[0.95] tracking-[-0.05em]; }
+  .opportunity-card-featured h3 { @apply text-4xl sm:text-5xl; }
   .opportunity-card p { @apply mt-4 flex items-center gap-2 text-xs font-semibold opacity-55; }
   .opportunity-card strong { @apply mt-1 block text-xl font-black; }
 
-  .steps-grid { @apply grid border-l border-t border-black/10 sm:grid-cols-2 lg:grid-cols-4; }
-  .step-card { @apply min-h-[330px] border-b border-r border-black/10 p-7 lg:p-8; }
-  .step-icon { @apply flex h-12 w-12 items-center justify-center rounded-2xl bg-black text-white; }
-  .step-card h3 { @apply mt-16 text-2xl font-black tracking-[-0.04em]; }
+  .steps-grid { @apply grid gap-3 sm:grid-cols-2 lg:grid-cols-12; }
+  .step-card { @apply min-h-[300px] border border-black/15 bg-[#f8f7f4] p-7 lg:p-8; clip-path: polygon(0 0, calc(100% - 22px) 0, 100% 22px, 100% 100%, 0 100%); }
+  .step-card:nth-child(1), .step-card:nth-child(4) { @apply lg:col-span-5; }
+  .step-card:nth-child(2), .step-card:nth-child(3) { @apply lg:col-span-7; }
+  .step-card:nth-child(2) { @apply lg:translate-y-8; }
+  .step-card:nth-child(3) { @apply bg-black text-white; }
+  .step-number { @apply font-mono text-4xl font-black tracking-[-0.08em] text-black/15; }
+  .step-card:nth-child(3) .step-number { @apply text-white/20; }
+  .step-icon { @apply flex h-12 w-12 items-center justify-center bg-black text-white; clip-path: polygon(8px 0, 100% 0, 100% calc(100% - 8px), calc(100% - 8px) 100%, 0 100%, 0 8px); }
+  .step-card:nth-child(3) .step-icon { @apply bg-emerald-400 text-black; }
+  .step-card h3 { @apply mt-12 text-2xl font-black tracking-[-0.04em]; }
   .step-card p { @apply mt-4 text-sm font-medium leading-6 text-slate-500; }
+  .step-card:nth-child(3) p { @apply text-white/55; }
 
-  .role-grid { @apply grid overflow-hidden rounded-[3rem] border border-black/10 sm:grid-cols-2; }
-  .role-panel { @apply flex min-h-[500px] flex-col justify-between border-b border-black/10 bg-white p-8 sm:p-10 lg:p-12 xl:p-14; }
-  .role-panel:nth-child(odd) { @apply sm:border-r; }
+  .role-grid { @apply grid gap-3 sm:grid-cols-2; }
+  .role-panel { @apply flex min-h-[500px] flex-col justify-between border border-black/15 bg-white p-8 sm:p-10 lg:p-12 xl:p-14; clip-path: polygon(0 0, calc(100% - 34px) 0, 100% 34px, 100% 100%, 26px 100%, 0 calc(100% - 26px)); }
   .role-panel-dark { @apply bg-black text-white; }
-  .role-panel-accent { @apply bg-emerald-400 text-emerald-950; }
-  .role-panel-icon { @apply mt-6 flex h-12 w-12 items-center justify-center rounded-2xl border border-current/15; }
+  .role-panel-accent { @apply bg-[#d8ff3e] text-black; }
+  .role-panel-heading { @apply flex items-center justify-between; }
+  .role-panel-heading > span:last-child { @apply font-mono text-[8px] font-bold tracking-[0.18em] opacity-35; }
+  .role-panel-icon { @apply mt-6 flex h-12 w-12 items-center justify-center border border-current/20; }
   .role-panel h2 { @apply mt-6 text-4xl font-black leading-[1] tracking-[-0.055em] sm:text-5xl; text-wrap: balance; overflow-wrap: anywhere; }
   .role-panel ul { @apply my-10 space-y-4 text-sm font-semibold; }
   .role-panel li { @apply flex items-center gap-3; }
@@ -190,7 +249,7 @@
   .role-panel-accent li svg { @apply text-emerald-950; }
   .role-panel button { @apply flex w-fit items-center gap-3 rounded-full border border-current px-6 py-4 text-xs font-black transition hover:-translate-y-0.5; }
   .role-link { @apply flex w-fit items-center gap-3 rounded-full border border-current px-6 py-4 text-xs font-black transition hover:-translate-y-0.5; }
-  .guest-note { @apply mt-5 grid gap-3 rounded-[2rem] border border-black/10 bg-white p-6 text-sm sm:grid-cols-[auto_1fr] sm:items-center sm:p-7; }
+  .guest-note { @apply mt-5 grid gap-3 border border-black/15 bg-white p-6 text-sm sm:grid-cols-[auto_1fr] sm:items-center sm:p-7; clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 0 100%); }
   .guest-note > div { @apply flex items-center gap-3 whitespace-nowrap; }
   .guest-note p { @apply font-medium leading-6 text-slate-500 sm:border-l sm:border-black/10 sm:pl-6; }
 
@@ -199,11 +258,11 @@
   }
   .trust-copy > h2 { @apply mt-5 max-w-3xl text-4xl font-black leading-[0.92] tracking-[-0.06em] sm:text-6xl; }
   .trust-copy > p { @apply my-8 max-w-2xl text-base font-medium leading-7 text-white/55; }
-  .trust-copy > div > div { @apply grid grid-cols-[auto_1fr] gap-x-3 rounded-2xl border border-white/10 p-4; }
+  .trust-copy > div > div { @apply grid grid-cols-[auto_1fr] gap-x-3 border-l border-white/15 p-4; }
   .trust-copy svg { @apply row-span-2 text-emerald-400; }
   .trust-copy span { @apply text-sm font-black; }
   .trust-copy small { @apply text-xs text-white/45; }
-  .trust-console { @apply self-center rounded-[3rem] border border-white/15 bg-white/[0.06] p-7 shadow-2xl backdrop-blur sm:p-10; }
+  .trust-console { @apply self-center border border-white/15 bg-white/[0.06] p-7 shadow-2xl backdrop-blur sm:p-10; clip-path: polygon(0 0, calc(100% - 34px) 0, 100% 34px, 100% 100%, 34px 100%, 0 calc(100% - 34px)); }
   .trust-console > div:last-child p { @apply flex items-center justify-between; }
   .trust-console > div:last-child span { @apply text-white/45; }
   .trust-console > div:last-child strong { @apply font-mono text-[10px] uppercase tracking-[0.18em]; }
@@ -212,7 +271,13 @@
   .final-cta img { @apply mb-8 h-20 w-20 rounded-[1.75rem] object-contain shadow-2xl; }
   .final-cta h2 { @apply mt-5 text-5xl font-black leading-[0.88] tracking-[-0.07em] sm:text-7xl; }
   .final-cta p { @apply mt-7 max-w-xl text-base font-medium leading-7 text-slate-500; }
-  .final-cta button { @apply mt-8 flex items-center gap-3 rounded-full bg-black px-8 py-5 text-sm font-black text-white transition hover:-translate-y-0.5 hover:shadow-2xl; }
+  .final-cta button { @apply mt-8 flex items-center gap-3 bg-black px-8 py-5 text-sm font-black text-white transition hover:-translate-y-0.5 hover:shadow-2xl; clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px); }
+
+  .profile-signal-panel {
+    scroll-margin-bottom: 9rem;
+    @apply bg-black text-white shadow-2xl;
+    clip-path: polygon(0 0, calc(100% - 28px) 0, 100% 28px, 100% 100%, 22px 100%, 0 calc(100% - 22px));
+  }
 
   .site-footer { @apply mx-auto grid max-w-[1600px] gap-6 border-t border-black/10 px-6 py-10 text-xs font-semibold text-slate-500 sm:px-10 md:grid-cols-3 md:items-center lg:px-12; }
   .site-footer img { @apply h-9 w-9 rounded-xl object-contain; }
@@ -231,13 +296,23 @@
   @media (max-width: 1023px) {
     .edge-app-shell { min-height: 100dvh; }
     .hero-visual { height: auto; }
+    .topology-ledger { @apply grid-cols-3 divide-x divide-y-0; }
+    .topology-ledger span { @apply justify-center px-3 text-center; }
   }
 
   @media (max-width: 420px) {
     .hero-title { font-size: clamp(3rem, 16vw, 4.1rem); line-height: 0.92; }
     .hero-copy { @apply px-5 py-14; }
     .hero-visual { @apply min-h-[500px]; }
+    .network-topology { @apply py-14; }
+    .topology-map { @apply min-h-[340px]; }
+    .topology-node { @apply min-w-[90px] px-2; }
+    .topology-core { @apply h-24 w-24; }
+    .topology-ledger { @apply grid-cols-1 divide-x-0 divide-y; }
+    .topology-ledger span { @apply justify-start px-0; }
     .section-title { @apply text-[2.5rem] leading-[0.98]; }
+    .opportunity-card-featured { @apply min-h-[410px]; }
+    .step-card:nth-child(2) { @apply translate-y-0; }
     .role-panel { @apply min-h-[470px] p-7; }
     .role-panel h2 { @apply text-[2.45rem] leading-[1.02]; }
     .final-cta h2 { @apply text-[2.7rem] leading-[0.96]; }

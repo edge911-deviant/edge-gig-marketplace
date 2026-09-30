@@ -55,6 +55,16 @@ export function ProfileScreen({ profile }: { profile: UserProfile }) {
       : profile.role === 'audience'
         ? 'Favourite artist or event links, one per line'
         : 'Portfolio links, one per line';
+  const signalChecks = [
+    { label: 'name', ready: Boolean(profile.name.trim()) },
+    { label: 'bio', ready: Boolean(profile.bio.trim()) },
+    { label: 'location', ready: Boolean(profile.location.trim()) },
+    { label: isAudience ? 'sound preferences' : 'genres', ready: profile.genres.length > 0 },
+    ...(!isAudience ? [{ label: 'links', ready: profile.portfolio.length > 0 }] : []),
+  ];
+  const completedSignalChecks = signalChecks.filter((item) => item.ready).length;
+  const profileSignal = Math.round((completedSignalChecks / signalChecks.length) * 100);
+  const nextSignalField = signalChecks.find((item) => !item.ready)?.label;
 
   const handleSave = async (event: FormEvent) => {
     event.preventDefault();
@@ -79,7 +89,7 @@ export function ProfileScreen({ profile }: { profile: UserProfile }) {
   };
 
   return (
-    <div className="relative flex min-h-0 flex-1 flex-col items-center space-y-6 overflow-y-auto p-6 pb-32 no-scrollbar sm:p-10 lg:pb-12 lg:px-12 xl:px-16">
+    <div className="relative flex min-h-0 flex-1 flex-col items-center space-y-6 overflow-y-auto p-6 pb-44 no-scrollbar sm:p-10 lg:pb-12 lg:px-12 xl:px-16">
       <div className="scanline" />
       <div className="flex w-full max-w-6xl shrink-0 items-center justify-between">
         <div>
@@ -133,12 +143,37 @@ export function ProfileScreen({ profile }: { profile: UserProfile }) {
             <div className="rounded-[2rem] bg-white p-6 text-center shadow-sm"><p className="text-3xl font-black tracking-tighter text-emerald-500">{metrics.reliability === null ? '—' : `${metrics.reliability}%`}</p><p className="col-header">Reliability</p></div>
           </div>
         )}
-        <div className="shrink-0 p-8 border border-black/5 rounded-[2.5rem] space-y-4">
-          <span className="col-header opacity-100 text-black">Account boundary</span>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center gap-4 text-xs"><span className="font-medium text-slate-500 uppercase tracking-widest">Role-bound tools</span><span className="font-mono font-bold capitalize">{profile.role}</span></div>
-            <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden"><motion.div initial={{ width: 0 }} animate={{ width: '100%' }} className="h-full bg-emerald-500" /></div>
-            <p className="text-[10px] font-medium leading-5 text-slate-400">Marketplace records stay behind authenticated access. Your profile role controls which actions are available.</p>
+        <div className="profile-signal-panel shrink-0 space-y-5 p-8">
+          <div className="flex items-start justify-between gap-5">
+            <div>
+              <span className="col-header opacity-100 text-white">Profile_Signal</span>
+              <p className="mt-2 text-[10px] font-medium leading-5 text-white/50">Real completeness based on the profile fields you have added.</p>
+            </div>
+            <span className="font-mono text-3xl font-black tracking-[-0.08em] text-emerald-400">{profileSignal}%</span>
+          </div>
+          <div
+            role="progressbar"
+            aria-label="Profile completeness"
+            aria-valuemin={0}
+            aria-valuemax={100}
+            aria-valuenow={profileSignal}
+            className="h-2 overflow-hidden bg-white/10"
+          >
+            <motion.div initial={{ width: 0 }} animate={{ width: `${profileSignal}%` }} className="h-full bg-emerald-400" />
+          </div>
+          <div className="grid grid-cols-2 gap-3 font-mono text-[8px] font-bold uppercase tracking-[0.16em] text-white/50 sm:grid-cols-3">
+            {signalChecks.map((item) => (
+              <span key={item.label} className="flex items-center gap-2">
+                <span className={`h-1.5 w-1.5 ${item.ready ? 'bg-emerald-400' : 'bg-white/20'}`} />
+                {item.label}
+              </span>
+            ))}
+          </div>
+          <div className="flex items-center justify-between gap-4 border-t border-white/10 pt-4 text-[10px]">
+            <span className="font-mono uppercase tracking-[0.16em] text-white/40">Node status · active</span>
+            <button type="button" onClick={() => setEditing(true)} className="font-black text-white underline decoration-emerald-400 underline-offset-4">
+              {nextSignalField ? `Add ${nextSignalField}` : 'Signal complete'}
+            </button>
           </div>
         </div>
         </div>
