@@ -5,7 +5,6 @@ import {
   CalendarCheck,
   Check,
   Compass,
-  MapPin,
   Radio,
   Search,
   ShieldCheck,
@@ -18,15 +17,11 @@ import { MotionConfig, motion } from 'motion/react';
 import { GlitchWord, SignalCursor, SiteMotionControl, SiteScrollProgress, useSiteMotion } from './website/SiteMotion';
 import { StageVisual } from './website/StageVisual';
 import { RoleCircuit } from './website/RoleCircuit';
+import { DiscoveryBoard } from './website/DiscoveryBoard';
 import './website/website.css';
 
 const EDGE_MARK_SRC = `${import.meta.env.BASE_URL}edge-app-icon-transparent.png`;
 
-const previewGigs = [
-  { date: '18 OCT', title: 'Indie night support act', place: 'Kolkata · The Black Box', genre: 'Indie', budget: '₹18,000' },
-  { date: '02 NOV', title: 'Rooftop jazz trio', place: 'Mumbai · Lower Parel', genre: 'Jazz', budget: '₹32,000' },
-  { date: '15 NOV', title: 'Electronic live set', place: 'Bengaluru · Indiranagar', genre: 'Electronic', budget: '₹25,000' },
-];
 
 const steps = [
   {
@@ -174,25 +169,7 @@ export function PublicLandingPage({
             </div>
             <p className="section-intro">No vague social post, lost DM, or missing fee. EDGE keeps the useful details together so artists can decide, booking owners can choose, and audiences can find what is emerging nearby.</p>
           </div>
-          <div className="opportunity-grid">
-            {previewGigs.map((gig, index) => (
-              <article key={gig.title} className={`opportunity-card ${index === 0 ? 'opportunity-card-featured' : ''}`}>
-                <div className="flex items-start justify-between gap-4">
-                  <div><span className="opportunity-index">SIG/0{index + 1}</span><span className="opportunity-date">{gig.date}</span></div>
-                  <span className="opportunity-genre">{gig.genre}</span>
-                </div>
-                <div>
-                  <h3>{gig.title}</h3>
-                  <p><MapPin size={13} />{gig.place}</p>
-                </div>
-                <div className="flex items-end justify-between border-t border-current/10 pt-5">
-                  <div><span className="section-kicker opacity-60">Artist fee</span><strong>{gig.budget}</strong></div>
-                  <ArrowRight size={20} aria-hidden="true" />
-                </div>
-              </article>
-            ))}
-          </div>
-          <p className="mt-4 font-mono text-[9px] uppercase tracking-[0.18em] text-slate-400">Preview data shown for product demonstration.</p>
+          <DiscoveryBoard enabled={siteMotion.enabled} onJoin={primaryAction} joinLabel={primaryLabel} />
         </section>
 
         <section id="how-it-works" className="site-section border-y border-black/5 bg-white">
