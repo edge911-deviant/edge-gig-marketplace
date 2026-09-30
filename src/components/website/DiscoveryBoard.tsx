@@ -52,7 +52,7 @@ export function DiscoveryBoard({ enabled, scene, onJoin, joinLabel }: { enabled:
           <h2 id="signal-dialog-title">{mode === 'work' ? selected.title : selected.show}</h2>
           <p className="signal-dialog-place"><MapPin size={16} aria-hidden="true" />{selected.venue} · {selected.date} · {selected.time}</p>
           <div className="signal-dialog-facts"><div><span>{mode === 'work' ? 'Artist fee' : 'Event status'}</span><strong>{mode === 'work' ? selected.budget : 'Demo preview'}</strong></div><div><span>Performance</span><strong>{selected.duration}</strong></div></div>
-          <p className="signal-dialog-brief">{mode === 'work' ? selected.brief : `A ${selected.genre.toLowerCase()} night at ${selected.venue}. EDGE is building local discovery so audiences can find artists and host-published shows in the same network where bookings happen.`}</p>
+          <p className="signal-dialog-brief">{mode === 'work' ? selected.brief : `An evening of ${selected.genre.toLowerCase()} at ${selected.venue}. EDGE is building local discovery so audiences can find artists and host-published shows in the same network where bookings happen.`}</p>
           <p className="signal-dialog-note">This is a fictional preview. Real bookings require an account; public event publishing and ticketing are still being developed.</p>
           <button type="button" className="signal-dialog-join" onClick={() => { close(); onJoin(); }}>{joinLabel}<ArrowRight size={18} aria-hidden="true" /></button>
         </div>}

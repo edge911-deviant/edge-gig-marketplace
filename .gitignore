@@ -7,6 +7,7 @@ dist/
 coverage/
 # Local design evidence and browser/test output; keep source regression tests tracked.
 artifacts/
+/design-qa.md
 test-results/
 playwright-report/
 .playwright/
