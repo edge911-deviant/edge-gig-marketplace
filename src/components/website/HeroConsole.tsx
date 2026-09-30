@@ -81,7 +81,7 @@ export function HeroConsole({ enabled, role, onRoleChange, scene, onGuideMount }
           x.set(((event.clientX - bounds.left) / bounds.width - 0.5) * 6);
           y.set(((event.clientY - bounds.top) / bounds.height - 0.5) * 6);
         }} onPointerLeave={() => { x.set(0); y.set(0); }}>
-          <motion.img src={HERO_IMAGE_SRC} alt="An independent band performing to a crowd in an intimate venue" style={{ x: enabled ? imageX : 0, y: enabled ? imageY : 0, scale: 1.018 }} />
+          <motion.img src={HERO_IMAGE_SRC} alt="An independent band performing to a crowd in an intimate venue" draggable={false} style={{ x: enabled ? imageX : 0, y: enabled ? imageY : 0, scale: 1.018 }} />
           <div className="stage-photo-shade" />
           <motion.div key={traceKey} className={`stage-edge-trace stage-edge-trace-${mode} ${mode === 'roles' ? `stage-edge-${role}` : ''}`} aria-hidden="true"
             initial={enabled ? { scaleY: 0, opacity: 0.2 } : false} animate={{ scaleY: 1, opacity: 1 }} transition={{ duration: enabled ? 0.55 : 0, ease: 'easeOut' }} />

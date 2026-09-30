@@ -33,7 +33,7 @@ export function HelpNode({ enabled, guideSlot }: { enabled: boolean; guideSlot: 
         onPointerMove={(event) => { if (!enabled || event.pointerType !== 'mouse') return; const bounds = event.currentTarget.getBoundingClientRect(); tilt.set(((event.clientX - bounds.left) / bounds.width - .5) * 14); lift.set(-4); }}
         onPointerLeave={() => { tilt.set(0); lift.set(0); }} onFocus={() => { if (enabled) { tilt.set(-4); lift.set(-3); } }} onBlur={() => { tilt.set(0); lift.set(0); }}>
         <motion.span className="patch-image-wrap" initial={false} whileInView={enabled ? { y: [8, -3, 0], rotate: [-6, 2, 0] } : undefined} viewport={{ once: true, amount: .3 }} transition={{ duration: enabled ? .7 : 0 }}>
-          <motion.img src={`${import.meta.env.BASE_URL}edge-help-node.png`} alt="" width={112} height={112} style={{ rotate: enabled ? rotation : 0, y: enabled ? elevation : 0 }} />
+          <motion.img src={`${import.meta.env.BASE_URL}edge-help-node.png`} alt="" draggable={false} width={112} height={112} style={{ rotate: enabled ? rotation : 0, y: enabled ? elevation : 0 }} />
         </motion.span><strong>PATCH <span>/ EDGE guide</span></strong><span className="patch-help-label">Need a hand?<ArrowRight size={12} aria-hidden="true" /></span>
       </motion.button>, guideSlot)}
       <dialog className="help-node-dialog" ref={dialog} aria-labelledby="help-node-title" onClose={() => setOpen(false)} onClick={(event) => { if (event.target === event.currentTarget) close(); }}>
