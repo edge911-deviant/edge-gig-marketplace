@@ -1,11 +1,18 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { bookingJourney, demoSignals, getDemoSignals, resolveDemoPlace, siteRoles } from './siteModel';
+import { bookingJourney, demoSignals, getDemoSignals, getSiteRoleRoute, resolveDemoPlace, siteRoles } from './siteModel';
 
 test('all four profile pillars and the complete product journey are explicit', () => {
   assert.deepEqual(siteRoles.map((role) => role.id), ['artist', 'organiser', 'venue', 'audience']);
   assert.deepEqual(bookingJourney.map((step) => step.label), ['Brief', 'Artist', 'Booking', 'Show']);
   assert.match(bookingJourney[3].detail, /plans host-approved/);
+});
+test('role signals traverse every connected node in either direction', () => {
+  assert.deepEqual(getSiteRoleRoute('artist', 'audience'), ['artist', 'organiser', 'venue', 'audience']);
+  assert.deepEqual(getSiteRoleRoute('audience', 'artist'), ['audience', 'venue', 'organiser', 'artist']);
+  assert.deepEqual(getSiteRoleRoute('organiser', 'audience'), ['organiser', 'venue', 'audience']);
+  assert.deepEqual(getSiteRoleRoute('venue', 'organiser'), ['venue', 'organiser']);
+  assert.deepEqual(getSiteRoleRoute('venue', 'venue'), ['venue']);
 });
 test('demo location accepts supported PINs, cities and common aliases', () => {
   for (const [input, city] of [['700001', 'Kolkata'], ['400001', 'Mumbai'], ['560001', 'Bengaluru'], ['  MuMbAi  ', 'Mumbai'], ['Bangalore', 'Bengaluru'], ['Calcutta', 'Kolkata']]) {

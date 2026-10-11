@@ -18,15 +18,22 @@ Read [EDGE_MEMORY.md](EDGE_MEMORY.md) before changing product behavior or visual
 
 ## Local development
 
-Requirements: Node.js 22+ and, for Firestore rule tests, Java 21+.
+For the complete VS Code setup, launch profiles, Firebase prerequisites,
+manual role-by-role checks, and troubleshooting, read
+[Local development and manual testing](docs/LOCAL_DEVELOPMENT.md).
+
+Requirements: Node.js 22 LTS and, for Firestore rule tests, Java 21+.
 
 ```powershell
-npm.cmd install
-npm.cmd install --prefix functions
+npm.cmd ci
+npm.cmd ci --prefix functions
 npm.cmd run dev
 ```
 
-Open `http://localhost:3000` in Chrome, Edge, Firefox, or Safari. If Google rejects the hostname or the redirect does not finish, follow [docs/firebase-auth-local.md](docs/firebase-auth-local.md).
+Open `http://localhost:3000`. In VS Code, you can instead press `F5` and choose
+`EDGE: Chrome` or `EDGE: Edge`; the included launch profile starts Vite and opens
+the browser. If Google rejects the hostname or the redirect does not finish,
+follow [docs/firebase-auth-local.md](docs/firebase-auth-local.md).
 
 ## Verification
 

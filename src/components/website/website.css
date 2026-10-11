@@ -33,16 +33,22 @@ html:has(.public-site[data-motion="paused"]) { scroll-behavior: auto; }
 .stage-tabs button:hover { border-color: black; }
 .stage-tabs button:focus-visible { outline-offset: -4px; outline-color: black; }
 .public-site .stage-frame { height: clamp(510px, 55vw, 630px); min-height: 0; margin: 0; clip-path: polygon(24px 0, calc(100% - 48px) 0, 100% 48px, 100% calc(100% - 24px), calc(100% - 24px) 100%, 36px 100%, 0 calc(100% - 36px), 0 24px); }
-.stage-frame > img { object-position: 58% center; }
+.stage-artwork { position: absolute; inset: 0; overflow: hidden; background: #050706; }
+.stage-artwork > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 .stage-photo-shade { position: absolute; inset: 0; background: #0002; pointer-events: none; }
-.stage-edge-trace { position: absolute; z-index: 1; top: 46px; bottom: 36px; left: 26px; width: 20px; border-left: 2px solid var(--circuit); border-bottom: 2px solid var(--circuit); transform-origin: top; pointer-events: none; }
-.stage-edge-organiser, .stage-edge-venue, .stage-edge-audience { left: auto; right: 26px; border-left: 0; border-right: 2px solid var(--circuit); }
-.stage-edge-venue { top: 50%; }
-.stage-edge-audience { top: auto; height: 110px; }
-.stage-edge-trace-journey, .stage-edge-trace-nearby { left: 35px; top: 97px; bottom: auto; width: 18px; height: 348px; border-width: 1px; }
+.stage-role-wire { position: absolute; z-index: 1; display: block; background: #d8ff3e8f; box-shadow: 0 0 9px #d8ff3e26; pointer-events: none; }
+.stage-role-wire-horizontal { height: 1px; translate: 0 -50%; }
+.stage-role-wire-vertical { width: 1px; translate: -50% 0; }
+.stage-role-traveller { position: absolute; z-index: 4; left: 0; top: 0; display: block; width: 10px; height: 10px; margin: -5px 0 0 -5px; border: 2px solid white; border-radius: 50%; background: var(--circuit); box-shadow: 0 0 0 4px #0a0a0ab8, 0 0 18px #d8ff3ecc; pointer-events: none; }
+.stage-role-traveller::after { content: ''; position: absolute; inset: -7px; border: 1px solid #d8ff3e8c; border-radius: 50%; animation: edge-role-traveller-pulse 1s ease-out infinite; }
+.public-site[data-motion="active"] .stage-role-artist[aria-pressed="false"] > svg { animation: edge-isolated-role-pulse 1.8s ease-in-out infinite; }
+@keyframes edge-role-traveller-pulse { 0% { scale: .6; opacity: .9; } 100% { scale: 1.25; opacity: 0; } }
+@keyframes edge-isolated-role-pulse { 0%, 100% { filter: drop-shadow(0 0 0 #d8ff3e00); } 50% { filter: drop-shadow(0 0 7px #d8ff3eb8); } }
+.stage-edge-trace { position: absolute; z-index: 1; pointer-events: none; }
+.stage-edge-trace-journey, .stage-edge-trace-nearby { left: 35px; top: 97px; bottom: auto; width: 18px; height: 348px; border-left: 1px solid var(--circuit); border-bottom: 1px solid var(--circuit); background: none; transform-origin: top; }
 .stage-edge-trace-nearby { top: 158px; height: 305px; }
 .stage-instruction { position: absolute; top: 94px; left: 56px; color: #ffffffd9; font: 700 9px/1.6 var(--font-mono); text-transform: uppercase; letter-spacing: .12em; }
-.stage-role-node { position: absolute; z-index: 2; display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 4px; color: white; cursor: pointer; }
+.stage-role-node { position: absolute; z-index: 3; display: flex; align-items: center; gap: 10px; min-height: 48px; padding: 4px; color: white; cursor: pointer; }
 .stage-role-node > svg { flex-shrink: 0; fill: #0a0a0a; }
 .stage-role-node > span { display: block; border: 1px solid #ffffff80; padding: 12px 18px; background: #0a0a0ae6; font: 700 10px var(--font-mono); text-transform: uppercase; letter-spacing: .05em; }
 .stage-role-node[aria-pressed="true"] { color: var(--circuit); }
@@ -282,8 +288,6 @@ html:has(.public-site[data-motion="paused"]) { scroll-behavior: auto; }
   .stage-role-venue { right: 12px; }
   .stage-role-audience { right: 12px; bottom: 40px; }
   .stage-instruction { font-size: 7px; top: 77px; left: 44px; }
-  .stage-edge-trace { left: 20px; }
-  .stage-edge-organiser, .stage-edge-venue, .stage-edge-audience { left: auto; right: 20px; }
   .stage-photo-caption { bottom: 40px; left: 38px; padding: 10px; max-width: 135px; }
   .stage-photo-caption > span { font-size: 6px; }
   .stage-photo-caption > p { font-size: 16px; }

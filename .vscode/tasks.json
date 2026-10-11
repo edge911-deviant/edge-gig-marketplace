@@ -1,0 +1,79 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "EDGE: install app dependencies",
+      "type": "shell",
+      "command": "npm.cmd ci",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "EDGE: install function dependencies",
+      "type": "shell",
+      "command": "npm.cmd ci --prefix functions",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    },
+    {
+      "label": "EDGE: first-time setup",
+      "dependsOrder": "sequence",
+      "dependsOn": [
+        "EDGE: install app dependencies",
+        "EDGE: install function dependencies"
+      ],
+      "problemMatcher": []
+    },
+    {
+      "label": "EDGE: start Vite",
+      "type": "shell",
+      "command": "npm.cmd run dev -- --strictPort",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "isBackground": true,
+      "problemMatcher": {
+        "owner": "vite",
+        "pattern": {
+          "regexp": "^(.+\\.[cm]?[jt]sx?):(\\d+):(\\d+):\\s*(.+)$",
+          "file": 1,
+          "line": 2,
+          "column": 3,
+          "message": 4
+        },
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^\\s*VITE\\s+v\\d",
+          "endsPattern": "\\bLocal:\\s+http://(?:localhost|127\\.0\\.0\\.1):3000(?:/|\\s|$)"
+        }
+      },
+      "presentation": {
+        "reveal": "always",
+        "panel": "dedicated",
+        "clear": false
+      }
+    },
+    {
+      "label": "EDGE: verify code and production build",
+      "type": "shell",
+      "command": "npm.cmd run verify",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": "$tsc"
+    },
+    {
+      "label": "EDGE: test Firestore rules",
+      "type": "shell",
+      "command": "npm.cmd run test:rules",
+      "options": {
+        "cwd": "${workspaceFolder}"
+      },
+      "problemMatcher": []
+    }
+  ]
+}

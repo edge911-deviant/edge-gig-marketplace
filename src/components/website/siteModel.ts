@@ -11,6 +11,16 @@ export const siteRoles = [
   { id: 'audience', label: 'Audience', verb: 'Discover', headline: 'Find a live moment worth showing up for.', detail: 'Explore artists and nearby live moments by place and sound. Discovery gets its own place in the network.', action: 'Explore audience tools' },
 ] as const;
 
+export const siteRoleOrder: SiteRole[] = ['artist', 'organiser', 'venue', 'audience'];
+
+export function getSiteRoleRoute(from: SiteRole, to: SiteRole): SiteRole[] {
+  const fromIndex = siteRoleOrder.indexOf(from);
+  const toIndex = siteRoleOrder.indexOf(to);
+  const direction = fromIndex <= toIndex ? 1 : -1;
+  const length = Math.abs(toIndex - fromIndex) + 1;
+  return Array.from({ length }, (_, index) => siteRoleOrder[fromIndex + index * direction]);
+}
+
 export const bookingJourney = [
   { label: 'Brief', title: 'A clear brief starts it.', owner: 'Organiser + venue', detail: 'Set the date, place, sound, artist fee, and stage needs. Artists can decide whether the opportunity fits.', output: 'A complete opportunity', action: 'See a demo brief' },
   { label: 'Artist', title: 'The right context travels with the artist.', owner: 'Artist', detail: 'Apply once with a profile and performance links. The booking owner compares applications against the same brief.', output: 'An application with context', action: 'Explore artist tools' },

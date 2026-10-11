@@ -1,16 +1,41 @@
-import { KeyboardEvent, useEffect, useRef, useState } from 'react';
+import { KeyboardEvent, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { ArrowRight, Circle, MapPin, Pause, Play, Radio, RotateCcw } from 'lucide-react';
-import { motion, useInView, useMotionValue, useSpring } from 'motion/react';
-import { SiteRole, bookingJourney, demoCities, siteRoles } from './siteModel';
+import { AnimatePresence, motion, useInView, useMotionValue, useSpring } from 'motion/react';
+import { SiteRole, bookingJourney, demoCities, getSiteRoleRoute, siteRoles } from './siteModel';
 import { DemoScene } from './useDemoScene';
 
-const HERO_IMAGE_SRC = `${import.meta.env.BASE_URL}edge-live-stage.png`;
+const heroArtwork: Record<SiteRole, { src: string; alt: string; position: string }> = {
+  artist: {
+    src: `${import.meta.env.BASE_URL}edge-live-artist.jpg`,
+    alt: 'A band performing in a dimly lit independent venue',
+    position: '58% center',
+  },
+  organiser: {
+    src: `${import.meta.env.BASE_URL}edge-live-organiser.jpg`,
+    alt: 'A live-event production team working at a concert control desk',
+    position: '63% center',
+  },
+  venue: {
+    src: `${import.meta.env.BASE_URL}edge-live-venue.jpg`,
+    alt: 'Instruments and amplifiers prepared for a venue soundcheck',
+    position: '58% center',
+  },
+  audience: {
+    src: `${import.meta.env.BASE_URL}edge-live-audience.jpg`,
+    alt: 'A concert audience with hands raised toward the stage',
+    position: '61% center',
+  },
+};
+const journeyArtwork: SiteRole[] = ['organiser', 'artist', 'venue', 'audience'];
 const modes = [
   { id: 'roles', label: 'Your role', number: '01' },
   { id: 'journey', label: 'Brief → show', number: '02' },
   { id: 'nearby', label: 'Nearby', number: '03' },
 ] as const;
 type HeroMode = (typeof modes)[number]['id'];
+type SignalPoint = { x: number; y: number };
+type RolePoints = Record<SiteRole, SignalPoint>;
+type TravellerState = { run: number; points: SignalPoint[]; target: SiteRole; moving: boolean };
 
 export function HeroConsole({ enabled, role, onRoleChange, scene, onGuideMount }: {
   enabled: boolean; role: SiteRole; onRoleChange: (role: SiteRole) => void; scene: DemoScene; onGuideMount: (slot: HTMLDivElement | null) => void;
@@ -21,8 +46,13 @@ export function HeroConsole({ enabled, role, onRoleChange, scene, onGuideMount }
   const [eventId, setEventId] = useState('');
   const [signal, setSignal] = useState(0);
   const [pageVisible, setPageVisible] = useState(!document.hidden);
+  const [displayedArtworkRole, setDisplayedArtworkRole] = useState<SiteRole>(role);
+  const [rolePoints, setRolePoints] = useState<RolePoints | null>(null);
+  const [traveller, setTraveller] = useState<TravellerState>({ run: 0, points: [], target: role, moving: false });
   const module = useRef<HTMLDivElement>(null);
+  const stageFrame = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
+  const roleRefs = useRef<Partial<Record<SiteRole, HTMLButtonElement | null>>>({});
   const inView = useInView(module, { amount: 0.15 });
   const x = useMotionValue(0);
   const y = useMotionValue(0);
@@ -31,6 +61,10 @@ export function HeroConsole({ enabled, role, onRoleChange, scene, onGuideMount }
   const selectedRole = siteRoles.find((item) => item.id === role)!;
   const journey = bookingJourney[step];
   const selectedEvent = scene.signals.find((item) => item.id === eventId) ?? scene.signals[0];
+  const artworkRole = mode === 'journey' ? journeyArtwork[step] : mode === 'nearby' ? 'audience' : displayedArtworkRole;
+  const artwork = heroArtwork[artworkRole];
+  const travellerStart = traveller.points[0];
+  const travellerEnd = traveller.points[traveller.points.length - 1];
 
   useEffect(() => {
     const update = () => setPageVisible(!document.hidden);
@@ -48,6 +82,42 @@ export function HeroConsole({ enabled, role, onRoleChange, scene, onGuideMount }
     }, 2600);
     return () => clearTimeout(timer);
   }, [playing, enabled, inView, pageVisible, mode, step]);
+  useLayoutEffect(() => {
+    if (mode !== 'roles' || !stageFrame.current) {
+      setRolePoints(null);
+      return;
+    }
+    const frame = stageFrame.current;
+    const measure = () => {
+      const frameBounds = frame.getBoundingClientRect();
+      const measured = {} as RolePoints;
+      for (const item of siteRoles) {
+        const dot = roleRefs.current[item.id]?.querySelector('svg');
+        if (!dot) return;
+        const bounds = dot.getBoundingClientRect();
+        measured[item.id] = {
+          x: bounds.left - frameBounds.left + bounds.width / 2,
+          y: bounds.top - frameBounds.top + bounds.height / 2,
+        };
+      }
+      setRolePoints(measured);
+    };
+    measure();
+    const observer = new ResizeObserver(measure);
+    observer.observe(frame);
+    return () => observer.disconnect();
+  }, [mode]);
+  useEffect(() => {
+    if (mode !== 'roles') {
+      setDisplayedArtworkRole(role);
+      return;
+    }
+    if (!rolePoints) return;
+    const route = getSiteRoleRoute(displayedArtworkRole, role).map((routeRole) => rolePoints[routeRole]);
+    const moving = enabled && route.length > 1;
+    setTraveller((current) => ({ run: current.run + 1, points: route, target: role, moving }));
+    if (!moving) setDisplayedArtworkRole(role);
+  }, [enabled, mode, role, rolePoints]);
 
   const chooseMode = (value: HeroMode) => { setMode(value); setPlaying(false); setSignal((value) => value + 1); };
   const moveTab = (event: KeyboardEvent<HTMLButtonElement>, index: number) => {
@@ -75,21 +145,41 @@ export function HeroConsole({ enabled, role, onRoleChange, scene, onGuideMount }
       </div>
       {modes.filter((item) => item.id !== mode).map((item) => <div key={item.id} id={`stage-panel-${item.id}`} role="tabpanel" aria-labelledby={`stage-tab-${item.id}`} hidden />)}
       <div id={`stage-panel-${mode}`} role="tabpanel" aria-labelledby={`stage-tab-${mode}`}>
-        <div className="hero-visual stage-frame" onPointerMove={(event) => {
+        <div className="hero-visual stage-frame" ref={stageFrame} onPointerMove={(event) => {
           if (!enabled || event.pointerType !== 'mouse' || !window.matchMedia('(pointer: fine)').matches) return;
           const bounds = event.currentTarget.getBoundingClientRect();
           x.set(((event.clientX - bounds.left) / bounds.width - 0.5) * 6);
           y.set(((event.clientY - bounds.top) / bounds.height - 0.5) * 6);
         }} onPointerLeave={() => { x.set(0); y.set(0); }}>
-          <motion.img src={HERO_IMAGE_SRC} alt="An independent band performing to a crowd in an intimate venue" draggable={false} style={{ x: enabled ? imageX : 0, y: enabled ? imageY : 0, scale: 1.018 }} />
+          <div className="stage-artwork" role="img" aria-label={artwork.alt}>
+            <AnimatePresence initial={false}>
+              <motion.img key={artworkRole} src={artwork.src} alt="" draggable={false}
+                initial={enabled ? { opacity: 0 } : false}
+                animate={{ opacity: 1, scale: 1.018 }}
+                exit={enabled ? { opacity: 0 } : undefined}
+                transition={{ duration: enabled ? 0.3 : 0, ease: 'easeOut' }}
+                style={{ x: enabled ? imageX : 0, y: enabled ? imageY : 0, objectPosition: artwork.position }} />
+            </AnimatePresence>
+          </div>
           <div className="stage-photo-shade" />
-          <motion.div key={traceKey} className={`stage-edge-trace stage-edge-trace-${mode} ${mode === 'roles' ? `stage-edge-${role}` : ''}`} aria-hidden="true"
-            initial={enabled ? { scaleY: 0, opacity: 0.2 } : false} animate={{ scaleY: 1, opacity: 1 }} transition={{ duration: enabled ? 0.55 : 0, ease: 'easeOut' }} />
+          {mode !== 'roles' && <motion.div key={traceKey} className={`stage-edge-trace stage-edge-trace-${mode}`} aria-hidden="true"
+            initial={enabled ? { scaleY: 0, opacity: 0.2 } : false}
+            animate={{ scaleY: 1, opacity: 1 }} transition={{ duration: enabled ? 0.55 : 0, ease: 'easeOut' }} />}
           {mode === 'roles' && <>
+            {rolePoints && <>
+              <span className="stage-role-wire stage-role-wire-horizontal" aria-hidden="true" style={{ left: rolePoints.artist.x, top: rolePoints.artist.y, width: rolePoints.organiser.x - rolePoints.artist.x }} />
+              <span className="stage-role-wire stage-role-wire-vertical" aria-hidden="true" style={{ left: rolePoints.organiser.x, top: rolePoints.organiser.y, height: rolePoints.audience.y - rolePoints.organiser.y }} />
+            </>}
+            {travellerStart && travellerEnd && <motion.span key={traveller.run} className="stage-role-traveller" data-role-signal={traveller.target} aria-hidden="true"
+              initial={{ x: travellerStart.x, y: travellerStart.y, opacity: 1 }}
+              animate={traveller.moving ? { x: traveller.points.map((point) => point.x), y: traveller.points.map((point) => point.y), opacity: 1 } : { x: travellerEnd.x, y: travellerEnd.y, opacity: 1 }}
+              transition={traveller.moving ? { duration: Math.max(0.42, (traveller.points.length - 1) * 0.42), times: traveller.points.map((_, index) => index / (traveller.points.length - 1)), ease: 'easeInOut' } : { duration: 0 }}
+              onAnimationComplete={() => { if (traveller.moving && traveller.target === role) setDisplayedArtworkRole(traveller.target); }} />}
             <p className="stage-instruction">Choose your place<br />in EDGE</p>
             <div className="stage-role-controls" aria-label="Hero profile roles">
               {siteRoles.map((item) => <button type="button" key={item.id} className={`stage-role-node stage-role-${item.id}`} aria-pressed={role === item.id}
-                aria-controls="stage-role-detail" onClick={() => { onRoleChange(item.id); setSignal((value) => value + 1); }}><Circle size={20} aria-hidden="true" /><span>{item.label}</span></button>)}
+                aria-controls="stage-role-detail" ref={(element) => { roleRefs.current[item.id] = element; }}
+                onClick={() => { onRoleChange(item.id); setSignal((value) => value + 1); }}><Circle size={20} aria-hidden="true" /><span>{item.label}</span></button>)}
             </div>
             <div className="stage-photo-caption"><span>Four sides. One live-performance network.</span><p>The people make the connection.</p></div>
           </>}
