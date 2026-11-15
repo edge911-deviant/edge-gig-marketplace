@@ -4,6 +4,7 @@ node_modules/
 .firebase/
 build/
 dist/
+dist-poc/
 coverage/
 # Local design evidence and browser/test output; keep source regression tests tracked.
 artifacts/

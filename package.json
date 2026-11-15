@@ -5,9 +5,13 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port=3000 --host=0.0.0.0",
+    "dev:poc": "vite --mode website-poc --port=3001 --host=0.0.0.0 --open /poc.html",
     "build": "vite build",
     "build:firebase": "vite build --base /",
     "build:pages": "vite build && node scripts/prepare-pages-redirect.mjs",
+    "build:poc": "vite build --mode website-poc --base / --outDir dist-poc && node scripts/prepare-website-poc.mjs",
+    "preview:poc": "vite preview --outDir dist-poc --port=3001 --host=0.0.0.0",
+    "deploy:poc": "node scripts/deploy-website-poc.mjs",
     "verify:hosting-artifact": "node scripts/verify-firebase-build.mjs",
     "preview": "vite preview",
     "clean": "node -e \"require('node:fs').rmSync('dist',{recursive:true,force:true})\"",

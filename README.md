@@ -16,6 +16,31 @@ Artists can search open gigs, apply once, track and cancel applications, complet
 
 Read [EDGE_MEMORY.md](EDGE_MEMORY.md) before changing product behavior or visual language. The implementation status is tracked in [docs/DEV_FOCUS_STATUS.md](docs/DEV_FOCUS_STATUS.md), and the authorization contract is in [security_spec.md](security_spec.md).
 
+## Website overhaul POC
+
+**Live POC:** [Explore the website overhaul](https://edge-gig-marketplace--website-poc-0mrk8o41.web.app/)
+
+`main` remains the public mobile-first app. The overhaul stays on
+`9112-deviant/full-website` and can be shared at a separate Firebase preview URL,
+without merging or replacing the live app. The original mobile-first site carries
+the banner linking to the POC; the overhaul itself opens directly into its design.
+
+- `npm run dev:poc`: open the local POC at `http://localhost:3001/poc.html`.
+- `npm run build:poc` then `npm run preview:poc`: preview its production build at `http://localhost:3001/`.
+- `npm run deploy:poc`: from the overhaul branch, deploy only the `website-poc` preview channel using the existing Firebase CLI login.
+
+The POC reuses the website's responsive design, role exploration, demo discovery,
+motion controls and PATCH help. It has no Firebase session or data client; its
+sign-in actions open the existing canonical mobile-first app. Its build goes to
+`dist-poc`, separately from the production `dist` artifact. The deployment uses
+`firebase.poc.json`, leaves authentication domains unchanged and publishes no
+database rules or functions. The existing Pages workflow remains main-only.
+
+Anyone with the preview URL can view it. Search indexing is disabled, which is
+not access protection. The channel expires after 30 days; rerun `deploy:poc`
+to update the POC and renew it. If the channel expires and is deleted, its new
+random URL must also be updated in the original mobile site's banner.
+
 ## Local development
 
 For the complete VS Code setup, launch profiles, Firebase prerequisites,
