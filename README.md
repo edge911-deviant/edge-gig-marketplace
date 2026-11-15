@@ -10,6 +10,15 @@
 
 The [GitHub Pages address](https://edge911-deviant.github.io/edge-gig-marketplace/) is a lightweight entry shell that forwards visitors to the canonical app. It is not a second authenticated deployment.
 
+The original mobile-first app stays on `main`. Its Website POC banner opens the
+[website overhaul preview](https://edge-gig-marketplace--website-poc-0mrk8o41.web.app/)
+in a new tab. The overhaul's source and deployment remain on
+`9112-deviant/full-website`; its interactive sample content does not connect to
+live marketplace records. Sign-in from that preview returns to the current app.
+The preview channel expires on 15 December 2026. Renew it before expiry with
+`npm run deploy:poc` from the overhaul branch to keep its URL. If the channel is
+deleted and recreated, update `src/components/WebsitePocBanner.tsx` to its new URL.
+
 Mobile-first React and Firebase marketplace for structured live-performance booking.
 
 Artists can search open gigs, apply once, track and cancel applications, complete bookings, review organisers, and build a real reliability record. Organisers can publish gigs, evaluate applicants, hire atomically, manage completion/cancellation/no-shows, and review artists. Compatibility analysis runs through an authenticated Firebase callable function so the Gemini secret and protected profiles never enter the browser bundle.

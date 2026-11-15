@@ -31,6 +31,7 @@ import {
 } from './lib/applications';
 import { ArtistApplications } from './components/ArtistApplications';
 import { ProfileScreen } from './components/ProfileScreen';
+import { WebsitePocBanner } from './components/WebsitePocBanner';
 import { ReviewForm } from './components/ReviewForm';
 import { MarketplaceTelemetry, useMarketplaceTelemetry } from './hooks/useMarketplaceTelemetry';
 
@@ -1128,6 +1129,7 @@ export default function App() {
   console.log('[App] Mounting...');
   return (
     <ErrorBoundary>
+      <WebsitePocBanner />
       <AuthProvider>
         <div className="min-h-screen flex items-center justify-center py-12 md:py-24">
           <div className="mobile-container">
